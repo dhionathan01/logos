@@ -51,6 +51,12 @@ class NotAssigneeError(DomainError):
     title = "Incidente sob responsabilidade de outro analista"
 
 
+class IncidentNotEditableError(DomainError):
+    status_code = status.HTTP_409_CONFLICT
+    problem_type = "/problems/incident-not-editable"
+    title = "O incidente não pode ser alterado no status atual"
+
+
 class DuplicateIncidentError(DomainError):
     status_code = status.HTTP_409_CONFLICT
     problem_type = "/problems/duplicate-idempotency-key"
