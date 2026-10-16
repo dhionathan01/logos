@@ -22,6 +22,6 @@ A API precisa ser em Python, validar rigorosamente qualquer entrada, persistir i
 
 ## Consequências
 
-- A atualização condicional (`UPDATE ... WHERE version = :v`) é atômica no PostgreSQL, base do controle de concorrência (ADR-0005).
+- A atualização condicional (`UPDATE ... WHERE version = :v`) é atômica no PostgreSQL, base do controle de concorrência (ADR-0007).
 - `statement_timeout` e `connect_timeout` do PostgreSQL permitem falhar rápido em vez de travar requisições.
 - O PostgreSQL precisa de ajuste de memória para caber na VM (ver ADR de deploy).

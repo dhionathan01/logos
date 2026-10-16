@@ -19,7 +19,7 @@ As transições permitidas ficam em uma tabela única em `app/domain/incident.py
 | **Fechado** | | | | |
 
 - Entrar em **Em Investigação** atribui o incidente ao analista que fez a mudança.
-- Enquanto um incidente está **Em Investigação**, só o responsável pode alterá-lo (ver ADR-0006).
+- Enquanto um incidente está **Em Investigação**, só o responsável pode alterá-lo (ver ADR-0007).
 - **Fechado** é terminal: um novo problema no mesmo local gera um novo incidente.
 - **Criticidade padrão por categoria:** quando a ingestão não informa criticidade, ela é derivada da categoria (Acidente com Vítimas → Alta, Problema Mecânico → Baixa etc.). O analista pode ajustá-la depois.
 
