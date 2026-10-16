@@ -122,7 +122,7 @@ def register_error_handlers(app: FastAPI) -> None:
             for item in error.errors()
         ]
         return problem_response(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             title="Dados inválidos",
             detail="Um ou mais campos não passaram na validação.",
             problem_type="/problems/validation-error",

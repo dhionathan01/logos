@@ -55,7 +55,7 @@ def retry_transient_db_errors[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     decorated = retry(
         retry=retry_if_exception(is_transient_db_error),
         stop=stop_after_attempt(get_settings().db_retry_attempts),
-        wait=wait_exponential_jitter(initial=0.2, max=2),
+        wait=wait_exponential_jitter(multiplier=0.2, max=2),
         reraise=True,
     )(func)
 
