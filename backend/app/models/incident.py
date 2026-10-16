@@ -31,7 +31,7 @@ class Incident(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(120))
-    description: Mapped[str] = mapped_column(Text, default="")
+    description: Mapped[str] = mapped_column(Text, default="", server_default="")
     category: Mapped[Category] = mapped_column(_enum_column(Category, "incident_category"))
     severity: Mapped[Severity] = mapped_column(_enum_column(Severity, "incident_severity"))
     status: Mapped[Status] = mapped_column(
@@ -47,12 +47,10 @@ class Incident(Base):
     assignee: Mapped[User | None] = relationship(lazy="joined")
 
     idempotency_key: Mapped[str | None] = mapped_column(String(64), unique=True)
-    version: Mapped[int] = mapped_column(Integer, default=1)
+    version: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
 
     reported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

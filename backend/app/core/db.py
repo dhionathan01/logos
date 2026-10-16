@@ -1,6 +1,5 @@
 from collections.abc import Callable, Iterator
 from functools import wraps
-from typing import ParamSpec, TypeVar
 
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.exc import DBAPIError, OperationalError
@@ -44,11 +43,7 @@ def is_transient_db_error(error: BaseException) -> bool:
     return isinstance(error, DBAPIError) and error.connection_invalidated
 
 
-P = ParamSpec("P")
-R = TypeVar("R")
-
-
-def retry_transient_db_errors(func: Callable[P, R]) -> Callable[P, R]:
+def retry_transient_db_errors[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     """Reexecuta a operação inteira com backoff exponencial + jitter.
 
     A função decorada deve abrir a própria transação (`session.begin()`), para que
