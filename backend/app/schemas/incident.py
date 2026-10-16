@@ -23,7 +23,7 @@ Location = Annotated[str, StringConstraints(strip_whitespace=True, min_length=2,
 VehicleId = Annotated[
     str,
     StringConstraints(
-        strip_whitespace=True, to_upper=True, pattern=r"^[A-Z0-9-]{3,20}$", max_length=20
+        strip_whitespace=True, to_upper=True, pattern=r"^[A-Za-z0-9-]{3,20}$", max_length=20
     ),
 ]
 ResolutionNote = Annotated[str, StringConstraints(strip_whitespace=True, max_length=1000)]
