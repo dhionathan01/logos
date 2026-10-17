@@ -34,6 +34,7 @@ MVP da plataforma que organiza o caos entre **5.000 caminhões em rota** e a cen
 | **Resiliência a rede instável e banco lento** | Backend: timeouts curtos, `pool_pre_ping`, retry com backoff exponencial e jitter só em erros transitórios, `503` + `Retry-After` quando o banco não responde, `Idempotency-Key` na ingestão (caminhão que reenvia não duplica). Frontend: retry com backoff, fila antiga continua visível com aviso se a atualização falhar, banner de offline. | [ADR-0008](docs/adr/0008-resiliencia-e-idempotencia.md) |
 | **Validação e entradas inesperadas** | Schemas Pydantic estritos (`extra="forbid"`, limites de tamanho, enums, padrão de placa, data no futuro rejeitada), JSON malformado → `422`, corpo grande → `413`, todo erro em **Problem Details (RFC 9457)**, sem stack trace exposto. | `backend/app/schemas/incident.py` |
 | **Segurança básica da API** | JWT para analistas, API key para sistemas da frota (comparação em tempo constante), bcrypt, login sem enumeração de usuários, rate limit no login (429), CSP e headers de segurança no nginx, segredos só em variáveis de ambiente. | [ADR-0006](docs/adr/0006-autenticacao.md) |
+| **Visão de gestão (além da operação)** | **Painel analítico** com filtro de período: volume, taxa de resolução, tempos médios de resposta e resolução, **SLA por criticidade** (meta × realizado), incidentes **fora do SLA agora**, série diária registrados × resolvidos, recorte por categoria e **comparação entre analistas**, com mapa de calor de quem assume que tipo de incidente. Cada incidente também tem **histórico de auditoria** (quem fez o quê e quando). | [ADR-0013](docs/adr/0013-auditoria-sla-e-indicadores.md) |
 | **Feedback visual, modo claro/escuro, transições** | Skeleton, estados vazios distintos, tela de erro com "tentar novamente", toasts de confirmação, tema claro/escuro (preferência do sistema por padrão, sem piscar), transições curtas e respeito a `prefers-reduced-motion`. | `frontend/src/features/incidents/components/` |
 
 ### Ciclo de vida do incidente
@@ -91,7 +92,8 @@ frontend/
     api/            cliente HTTP, erros tipados, tipos gerados do OpenAPI
     app/            providers, rotas, shell, error boundary
     features/auth/  sessão e login
-    features/incidents/  queries, mutações, filtros, componentes
+    features/incidents/  fila: queries, mutações, filtros, detalhe e histórico
+    features/analytics/  painel: indicadores, gráficos, SLA e comparação entre analistas
     shared/         componentes e hooks reutilizáveis
     styles/         design tokens (identidade AutoU) e estilos globais
 infra/              compose de produção, nginx do host, bootstrap e deploy da VPS
@@ -139,7 +141,7 @@ Repetir o comando devolve o mesmo incidente (`200` + `Idempotent-Replayed: true`
 | `LOGOS_DATABASE_URL` | `postgresql+psycopg://logos:logos@localhost:5432/logos` | Conexão com o PostgreSQL |
 | `LOGOS_JWT_SECRET` | valor de desenvolvimento | Segredo de assinatura dos tokens |
 | `LOGOS_INGESTION_API_KEY` | `dev-ingestion-key` | Chave dos sistemas da frota |
-| `LOGOS_SEED_DEMO_DATA` | `false` | Cria analistas e 100 incidentes se o banco estiver vazio |
+| `LOGOS_SEED_DEMO_DATA` | `false` | Cria 3 analistas e 30 dias de incidentes (com histórico e marcos de SLA) se o banco estiver vazio |
 | `LOGOS_DB_STATEMENT_TIMEOUT_MS` | `5000` | Tempo máximo de uma consulta |
 
 ---
@@ -155,8 +157,8 @@ cd frontend
 npm run typecheck && npx oxlint && npm test
 ```
 
-- **Backend:** 61 testes, cerca de 90% de cobertura, `mypy --strict`. Inclui o teste de corrida entre dois analistas, payloads maliciosos, idempotência e queda do banco.
-- **Frontend:** 21 testes com Vitest + Testing Library + MSW. Cobre os estados de loading/erro/vazio e a mutação otimista com sucesso, conflito e queda de rede.
+- **Backend:** 84 testes, `mypy --strict`. Inclui o teste de corrida entre dois analistas, payloads maliciosos, idempotência, queda do banco, trilha de auditoria (inclusive "conflito não deixa rastro") e os cálculos de SLA e indicadores com dados controlados.
+- **Frontend:** 55 testes com Vitest + Testing Library + MSW. Cobre os estados de loading/erro/vazio, a mutação otimista com sucesso, conflito e queda de rede, o painel analítico e a descrição do histórico.
 - **Contrato:** o CI regenera os tipos TypeScript a partir do OpenAPI e falha se estiverem desatualizados.
 
 Estratégia completa em [ADR-0012](docs/adr/0012-estrategia-de-testes.md).
@@ -189,6 +191,8 @@ Documentação interativa em `/api/docs`. Resumo:
 | `GET` | `/api/incidents` | Fila priorizada; filtros `severity`, `category`, `status` (repetíveis), `search`, `reported_from`/`reported_to` (ISO 8601 com fuso), `limit`, `offset` |
 | `GET` | `/api/incidents/summary` | Contadores por criticidade e status |
 | `GET` | `/api/incidents/{id}` | Detalhe |
+| `GET` | `/api/incidents/{id}/events` | Histórico de auditoria (criação, mudanças de status, edições) |
+| `GET` | `/api/analytics` | Indicadores: resumo, por categoria, por criticidade (SLA), por analista e série diária; filtros `reported_from`/`reported_to` e `tz` |
 | `POST` | `/api/incidents` | Registra incidente (JWT ou `X-API-Key`; aceita `Idempotency-Key`) |
 | `PATCH` | `/api/incidents/{id}` | Edita dados (exige `version`) |
 | `PATCH` | `/api/incidents/{id}/status` | Assumir, devolver, concluir (exige `version`) |
@@ -227,7 +231,7 @@ Erros seguem a RFC 9457 (`application/problem+json`). Em conflito, o corpo traz 
 | **Vitest + Testing Library + MSW** | Testes de frontend | Testa componentes com o cliente HTTP real, interceptando a rede |
 | **pytest, ruff, mypy, oxlint, Prettier** | Qualidade | Lint, formatação e tipos estritos verificados no CI |
 
-Sem biblioteca de componentes de UI: os componentes usam os design tokens da AutoU (Figtree, navy, azul, laranja), e o modal usa o `<dialog>` nativo, que já traz foco preso e ESC.
+Sem biblioteca de componentes de UI nem de gráficos: os componentes usam os design tokens da AutoU (Figtree, navy, azul, laranja), o modal usa o `<dialog>` nativo, que já traz foco preso e ESC, e os gráficos do painel são SVG próprio. Os gráficos têm tooltip, navegação por teclado e tabela equivalente, e as cores foram validadas para daltonismo e contraste nos dois temas.
 
 ---
 
@@ -235,13 +239,13 @@ Sem biblioteca de componentes de UI: os componentes usam os design tokens da Aut
 
 Todas em [`docs/adr/`](docs/adr/README.md):
 
-0001 Registrar decisões em ADR · 0002 Monorepo · 0003 FastAPI + SQLAlchemy + PostgreSQL · 0004 Arquitetura em camadas · 0005 Ciclo de vida como máquina de estados · 0006 Autenticação · 0007 Concorrência otimista + atribuição · 0008 Resiliência e idempotência · 0009 Estado e resiliência no frontend · 0010 Design tokens e design da informação · 0011 CI/CD e deploy · 0012 Estratégia de testes
+0001 Registrar decisões em ADR · 0002 Monorepo · 0003 FastAPI + SQLAlchemy + PostgreSQL · 0004 Arquitetura em camadas · 0005 Ciclo de vida como máquina de estados · 0006 Autenticação · 0007 Concorrência otimista + atribuição · 0008 Resiliência e idempotência · 0009 Estado e resiliência no frontend · 0010 Design tokens e design da informação · 0011 CI/CD e deploy · 0012 Estratégia de testes · 0013 Auditoria, SLA e indicadores
 
 ---
 
 ## Próximos passos
 
 - **Tempo real via SSE** (PostgreSQL `LISTEN/NOTIFY`), substituindo o polling de 5 s.
-- **Histórico de eventos do incidente** (quem mudou o quê e quando) para auditoria.
-- **SLA por criticidade** configurável e alertas de incidentes parados.
+- **Metas de SLA configuráveis** pela interface e alerta ativo (push/e-mail) quando um incidente entra em violação.
+- **Séries diárias materializadas** quando o volume passar de milhões de incidentes.
 - Token em cookie `HttpOnly` e usuário `deploy` restrito a um comando SSH forçado.
