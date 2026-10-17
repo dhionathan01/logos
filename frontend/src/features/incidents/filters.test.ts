@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { hasCustomFilters, parseFilters, toApiQuery } from "./filters";
-import { ALL_TIME } from "./period";
+import { ALL_TIME } from "../../shared/period/period";
 
 describe("parseFilters", () => {
   it("mostra só incidentes ativos quando não há filtro de status", () => {

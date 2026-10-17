@@ -3,7 +3,12 @@ import { useSearchParams } from "react-router-dom";
 
 import type { Category, IncidentStatus, Severity } from "../../api/types";
 import { ACTIVE_STATUSES, CATEGORIES, SEVERITIES, STATUSES } from "./labels";
-import { type PeriodFilter, parsePeriod, periodToRange } from "./period";
+import {
+  type PeriodFilter,
+  parsePeriod,
+  periodToRange,
+  writePeriod,
+} from "../../shared/period/period";
 
 export interface IncidentFilters {
   severity: Severity[];
@@ -103,14 +108,7 @@ export function useIncidentFilters() {
     (period: PeriodFilter) => {
       setParams(
         (current) => {
-          const next = new URLSearchParams(current);
-          ["period", "from", "to"].forEach((key) => next.delete(key));
-          if (period.preset !== "all") next.set("period", period.preset);
-          if (period.preset === "custom") {
-            if (period.from) next.set("from", period.from);
-            if (period.to) next.set("to", period.to);
-          }
-          return next;
+          return writePeriod(current, period);
         },
         { replace: true },
       );
