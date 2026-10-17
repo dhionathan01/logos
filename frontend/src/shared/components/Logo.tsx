@@ -1,3 +1,4 @@
+import autouMark from "../../assets/brand/autou-mark.svg";
 import autouLogoWhite from "../../assets/brand/logo-autou-white.svg";
 import styles from "./Logo.module.css";
 
@@ -5,7 +6,7 @@ import styles from "./Logo.module.css";
 export function Logo({ size = "md" }: { size?: "md" | "lg" }) {
   return (
     <span className={`${styles.logo} ${styles[size]}`}>
-      <span className={styles.mark} aria-hidden="true" />
+      <img src={autouMark} alt="" className={styles.mark} />
       <span className={styles.wordmark}>Logos</span>
       <span className={styles.signature}>
         <span className="visually-hidden">por AutoU</span>

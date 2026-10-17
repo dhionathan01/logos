@@ -5,24 +5,26 @@
   color: var(--color-on-header);
 }
 
+/* Triângulo do logo oficial da AutoU, na cor original. */
 .mark {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  background: linear-gradient(135deg, var(--brand-amber-500), var(--brand-orange-500));
+  display: block;
+  width: auto;
+  height: 20px;
 }
 
+/* Peso leve, para conversar com o traço fino do wordmark da AutoU. */
 .wordmark {
-  font-weight: var(--font-weight-bold);
-  letter-spacing: -0.01em;
+  font-weight: var(--font-weight-regular);
+  letter-spacing: 0.01em;
 }
 
 .signature {
   display: inline-flex;
   align-items: center;
-  padding-left: var(--space-2);
+  margin-left: var(--space-1);
+  padding-left: var(--space-3);
   border-left: 1px solid color-mix(in srgb, currentColor 30%, transparent);
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 .autou {
@@ -32,17 +34,15 @@
 }
 
 .md .wordmark {
-  font-size: var(--font-size-lg);
-}
-
-.lg .wordmark {
-  font-size: var(--font-size-2xl);
+  font-size: 1.375rem;
 }
 
 .lg .mark {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
+  height: 30px;
+}
+
+.lg .wordmark {
+  font-size: 2.25rem;
 }
 
 .lg .autou {
