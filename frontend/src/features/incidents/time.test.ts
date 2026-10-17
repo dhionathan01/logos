@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { elapsedSince, formatElapsed } from "./time";
+import { elapsedSince, formatElapsed, formatOccurrence } from "./time";
 
 const minutes = (value: number) => value * 60_000;
 
@@ -13,6 +13,18 @@ describe("formatElapsed", () => {
     [minutes(60 * 24 * 3 + 10), "3 d"],
   ])("%d ms → %s", (elapsed, expected) => {
     expect(formatElapsed(elapsed)).toBe(expected);
+  });
+});
+
+describe("formatOccurrence", () => {
+  const now = new Date(2026, 9, 16, 15, 0).getTime();
+
+  it.each([
+    [new Date(2026, 9, 16, 14, 32), "hoje 14:32"],
+    [new Date(2026, 9, 15, 9, 10), "ontem 09:10"],
+    [new Date(2026, 9, 12, 18, 5), "12/10 18:05"],
+  ])("%s → %s", (date, expected) => {
+    expect(formatOccurrence(date.toISOString(), now)).toBe(expected);
   });
 });
 

@@ -29,8 +29,22 @@ const dateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
 });
 const timeFormatter = new Intl.DateTimeFormat("pt-BR", { timeStyle: "medium" });
 
+const shortTimeFormatter = new Intl.DateTimeFormat("pt-BR", { timeStyle: "short" });
+const dayMonthFormatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" });
+
 export const formatDateTime = (value: string | number) => dateTimeFormatter.format(new Date(value));
 export const formatTime = (value: number) => timeFormatter.format(new Date(value));
+
+/** Horário curto para a lista: "hoje 14:32", "ontem 09:10" ou "12/10 18:05". */
+export function formatOccurrence(isoDate: string, now: number): string {
+  const date = new Date(isoDate);
+  const today = new Date(now);
+  const yesterday = new Date(now - DAY);
+  const time = shortTimeFormatter.format(date);
+  if (date.toDateString() === today.toDateString()) return `hoje ${time}`;
+  if (date.toDateString() === yesterday.toDateString()) return `ontem ${time}`;
+  return `${dayMonthFormatter.format(date)} ${time}`;
+}
 
 /** Relógio compartilhado que faz os tempos "há X min" avançarem sem recarregar dados. */
 export function useNow(intervalMs = 30_000): number {
