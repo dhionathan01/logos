@@ -885,6 +885,10 @@ export interface operations {
                 reported_from?: string | null;
                 /** @description Ocorridos até este instante (ISO 8601 com fuso). */
                 reported_to?: string | null;
+                /** @description Responsáveis. Fechados mantêm quem concluiu, então isto lista o histórico. */
+                assignee?: string[];
+                /** @description priority: criticidade e idade (fila). recent: últimos concluídos/alterados. */
+                sort?: "priority" | "recent";
                 limit?: number;
                 offset?: number;
             };
