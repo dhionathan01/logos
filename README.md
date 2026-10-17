@@ -2,7 +2,9 @@
 
 MVP da plataforma que organiza o caos entre **5.000 caminhões em rota** e a central de decisão de uma operação logística: todos os incidentes em uma única fila, **já ordenada pelo que exige ação primeiro**, com garantia de que dois analistas nunca atuam no mesmo problema ao mesmo tempo.
 
-**Aplicação online:** _URL_PENDENTE_ · **Documentação da API:** _URL_PENDENTE_/api/docs
+**Aplicação online:** https://logos.152-67-53-190.sslip.io · **Documentação da API:** https://logos.152-67-53-190.sslip.io/api/docs
+
+Para entrar, use os botões de acesso rápido na tela de login (Ana, Bruno ou Carla; senha `logos2026`). Para testar o tempo real, abra uma janela anônima com outro analista.
 
 > **Acesso de demonstração:** a tela de login tem botões "Entrar como Ana" e "Entrar como Bruno" (usuários `ana` e `bruno`, senha `logos2026`).
 > Para ver o controle de conflito, entre como Ana em uma janela e como Bruno em uma janela anônima, e tente assumir o mesmo incidente.
