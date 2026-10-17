@@ -1,0 +1,27 @@
+.fallback {
+  display: grid;
+  place-content: center;
+  gap: var(--space-4);
+  min-height: 100vh;
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.fallback h1 {
+  font-size: var(--font-size-xl);
+}
+
+.fallback p {
+  color: var(--color-text-muted);
+}
+
+.fallback button {
+  justify-self: center;
+  height: 40px;
+  padding: 0 var(--space-6);
+  border: 0;
+  border-radius: var(--radius-button);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--font-weight-semibold);
+}
