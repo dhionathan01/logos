@@ -19,7 +19,7 @@ import styles from "./IncidentBoard.module.css";
 import { formatTime, useNow } from "./time";
 
 export function IncidentBoard() {
-  const { filters, toggle, setSearch, clear } = useIncidentFilters();
+  const { filters, toggle, setSearch, setPeriod, clear } = useIncidentFilters();
   const [params, setParams] = useSearchParams();
   const [isCreating, setIsCreating] = useState(false);
   const { user } = useSession();
@@ -100,6 +100,7 @@ export function IncidentBoard() {
         onToggleCategory={(category) => toggle("category", category)}
         onToggleStatus={(status) => toggle("status", status)}
         onSearch={setSearch}
+        onPeriodChange={setPeriod}
         onClear={clear}
       />
 

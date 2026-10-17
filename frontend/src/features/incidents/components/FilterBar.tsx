@@ -1,10 +1,11 @@
-import { Search, X } from "lucide-react";
+import { CalendarDays, Search, X } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 
 import type { Category, IncidentStatus } from "../../../api/types";
 import { Button } from "../../../shared/components/Button";
 import { type IncidentFilters, hasCustomFilters } from "../filters";
 import { CATEGORIES, CATEGORY_META, STATUSES, STATUS_LABEL } from "../labels";
+import { PERIOD_PRESETS, type PeriodFilter, type PeriodPreset, todayAsInputValue } from "../period";
 import styles from "./FilterBar.module.css";
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -14,6 +15,7 @@ interface FilterBarProps {
   onToggleCategory: (category: Category) => void;
   onToggleStatus: (status: IncidentStatus) => void;
   onSearch: (search: string) => void;
+  onPeriodChange: (period: PeriodFilter) => void;
   onClear: () => void;
 }
 
@@ -22,6 +24,7 @@ export function FilterBar({
   onToggleCategory,
   onToggleStatus,
   onSearch,
+  onPeriodChange,
   onClear,
 }: FilterBarProps) {
   const [searchDraft, setSearchDraft] = useState(filters.search);
@@ -87,8 +90,64 @@ export function FilterBar({
             );
           })}
         </ChipGroup>
+        <ChipGroup label="Ocorrido em">
+          {PERIOD_PRESETS.map((option) => (
+            <Chip
+              key={option.value}
+              pressed={filters.period.preset === option.value}
+              onClick={() => onPeriodChange(presetPeriod(option.value, filters.period))}
+            >
+              {option.value === "custom" && <CalendarDays size={14} aria-hidden="true" />}
+              {option.label}
+            </Chip>
+          ))}
+          {filters.period.preset === "custom" && (
+            <CustomRange period={filters.period} onChange={onPeriodChange} />
+          )}
+        </ChipGroup>
       </div>
     </section>
+  );
+}
+
+function presetPeriod(preset: PeriodPreset, current: PeriodFilter): PeriodFilter {
+  if (preset !== "custom") return { preset, from: "", to: "" };
+  if (current.preset === "custom") return current;
+  const today = todayAsInputValue();
+  return { preset, from: today, to: today };
+}
+
+function CustomRange({
+  period,
+  onChange,
+}: {
+  period: PeriodFilter;
+  onChange: (period: PeriodFilter) => void;
+}) {
+  const today = todayAsInputValue();
+  return (
+    <span className={styles.range}>
+      <label>
+        <span className="visually-hidden">De</span>
+        <input
+          type="date"
+          value={period.from}
+          max={period.to || today}
+          onChange={(event) => onChange({ ...period, from: event.target.value })}
+        />
+      </label>
+      <span aria-hidden="true">até</span>
+      <label>
+        <span className="visually-hidden">Até</span>
+        <input
+          type="date"
+          value={period.to}
+          min={period.from || undefined}
+          max={today}
+          onChange={(event) => onChange({ ...period, to: event.target.value })}
+        />
+      </label>
+    </span>
   );
 }
 
