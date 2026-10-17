@@ -57,8 +57,22 @@
   }
 }
 
-.truncated {
-  font-size: var(--font-size-sm);
+/* "Exibir todos": a lista vira uma zona com rolagem própria; filtros e contadores ficam à vista. */
+.list[data-scroll] {
+  max-height: max(420px, calc(100vh - 220px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.list[data-scroll]:focus-visible {
+  outline-offset: 2px;
+}
+
+.pageGone {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
   color: var(--color-text-muted);
   text-align: center;
 }

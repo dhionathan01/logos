@@ -12,14 +12,17 @@ import { FilterBar } from "./components/FilterBar";
 import { IncidentDrawer } from "./components/IncidentDrawer";
 import { IncidentRow } from "./components/IncidentRow";
 import { NewIncidentDialog } from "./components/NewIncidentDialog";
+import { PaginationBar } from "./components/PaginationBar";
 import { SeveritySummary } from "./components/SeveritySummary";
 import { hasCustomFilters, useIncidentFilters } from "./filters";
+import { totalPages } from "./pagination";
 import { useChangeStatus, useIncidents, useIncidentSummary, usePendingIncidentIds } from "./hooks";
 import styles from "./IncidentBoard.module.css";
 import { formatTime, useNow } from "./time";
 
 export function IncidentBoard() {
-  const { filters, toggle, setSearch, setPeriod, clear } = useIncidentFilters();
+  const { filters, toggle, setSearch, setPeriod, clear, setPage, setPageSize, setShowAll } =
+    useIncidentFilters();
   const [params, setParams] = useSearchParams();
   const [isCreating, setIsCreating] = useState(false);
   const { user } = useSession();
@@ -111,6 +114,8 @@ export function IncidentBoard() {
         aria-label="Incidentes ordenados por prioridade"
         aria-busy={incidents.isPlaceholderData || undefined}
         data-dimmed={incidents.isPlaceholderData || undefined}
+        data-scroll={filters.pagination.showAll || undefined}
+        tabIndex={filters.pagination.showAll ? 0 : undefined}
       >
         {incidents.isPending ? (
           <ListSkeleton />
@@ -120,6 +125,18 @@ export function IncidentBoard() {
             isRetrying={incidents.isFetching}
             onRetry={() => void incidents.refetch()}
           />
+        ) : page.items.length === 0 && page.total > 0 ? (
+          // A fila encolheu (incidentes fechados) e esta página ficou vazia.
+          <div className={styles.pageGone}>
+            <p>Esta página não tem mais incidentes; a fila diminuiu desde que você chegou aqui.</p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setPage(totalPages(page.total, filters.pagination.pageSize))}
+            >
+              Ir para a última página
+            </Button>
+          </div>
         ) : page.items.length === 0 ? (
           <EmptyState hasFilters={hasCustomFilters(filters)} onClearFilters={clear} />
         ) : (
@@ -140,11 +157,15 @@ export function IncidentBoard() {
         )}
       </section>
 
-      {page && page.total > page.items.length && (
-        <p className={styles.truncated}>
-          Exibindo os {page.items.length} mais prioritários de {page.total}. Use os filtros para
-          refinar.
-        </p>
+      {page && page.total > 0 && (
+        <PaginationBar
+          pagination={filters.pagination}
+          total={page.total}
+          shown={page.items.length}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          onShowAllChange={setShowAll}
+        />
       )}
 
       <IncidentDrawer incidentId={selectedId} onClose={closeIncident} />
