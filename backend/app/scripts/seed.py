@@ -4,16 +4,17 @@ Gera a fila atual (o que está acontecendo agora) e 30 dias de histórico resolv
 marcos de SLA e trilha de eventos coerentes, para que os indicadores tenham o que mostrar.
 
 Idempotente: não duplica usuários e só gera incidentes se a tabela estiver vazia.
-Uso: python -m app.scripts.seed
+Uso: python -m app.scripts.seed [--reset]   (--reset apaga os dados antes de recriar)
 """
 
 import logging
 import random
+import sys
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from app.core.db import SessionFactory
@@ -323,8 +324,21 @@ class _Generator:
         return timedelta(minutes=typical_minutes * speed * self._rng.uniform(0.35, 2.0))
 
 
+def reset_demo_data() -> None:
+    """Apaga incidentes, trilha, pedidos de passagem e chat; os analistas permanecem.
+
+    Usado pela rotina diária da demonstração pública: o que visitantes criaram ou
+    alteraram some, e o seed recria a base realista em seguida.
+    """
+    with SessionFactory.begin() as session:
+        session.execute(text("TRUNCATE incidents, chat_messages RESTART IDENTITY CASCADE"))
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
+    if "--reset" in sys.argv[1:]:
+        reset_demo_data()
+        logger.info("Dados de demonstração apagados")
     users = seed_users()
     created = seed_incidents(users)
     logger.info("Seed concluído: %d analistas, %d incidentes novos", len(users), created)
