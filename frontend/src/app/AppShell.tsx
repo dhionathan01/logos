@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 
 import { useSession } from "../features/auth/useSession";
+import { ChatPanel } from "../features/chat/ChatPanel";
+import { ChatToggle } from "../features/chat/ChatToggle";
+import { RealtimeBridge } from "../realtime/RealtimeBridge";
 import { Button } from "../shared/components/Button";
 import { Logo } from "../shared/components/Logo";
 import { ThemeToggle } from "../shared/components/ThemeToggle";
@@ -42,6 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           </div>
           <div className={styles.actions}>
+            <ChatToggle />
             {user && (
               <span className={styles.user}>
                 <span className={styles.avatar} aria-hidden="true">
@@ -73,6 +77,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       <main className={styles.main}>{children}</main>
+      <ChatPanel />
+      <RealtimeBridge />
     </div>
   );
 }
