@@ -5,7 +5,7 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 25;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-header);
   color: var(--color-on-header);
@@ -46,6 +46,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   text-decoration: none;
+  white-space: nowrap;
   transition:
     color var(--duration-fast) var(--easing-standard),
     border-color var(--duration-fast) var(--easing-standard);
@@ -88,6 +89,26 @@
   font-weight: var(--font-weight-bold);
 }
 
+.menuButton {
+  display: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-on-header);
+}
+
+.menuButton:hover,
+.menuButton[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--color-on-header) 12%, transparent);
+}
+
+.mobileMenu {
+  display: none;
+}
+
 .offline {
   display: flex;
   align-items: center;
@@ -101,10 +122,11 @@
   text-align: center;
 }
 
+/* O espaço de baixo deixa o fim da página acima da barra fixa do chat. */
 .main {
   max-width: var(--container-width);
   margin: 0 auto;
-  padding: var(--space-6);
+  padding: var(--space-6) var(--space-6) calc(var(--chat-bar-height) + var(--space-8));
   transition: padding var(--duration-normal) var(--easing-standard);
 }
 
@@ -112,38 +134,93 @@
 @media (min-width: 1200px) {
   .main[data-chat-open] {
     max-width: calc(var(--container-width) + var(--chat-panel-width));
-    padding-right: calc(var(--chat-panel-width) + var(--space-6));
+    padding-right: calc(var(--chat-panel-width) + var(--space-12));
+  }
+}
+
+/* Abaixo de 900 px as abas e o usuário não cabem: vão para o menu hambúrguer. */
+@media (max-width: 900px) {
+  .nav,
+  .user,
+  .logout {
+    display: none;
+  }
+
+  .menuButton {
+    display: grid;
+  }
+
+  .mobileMenu:not([hidden]) {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-header);
+    box-shadow: var(--shadow-overlay);
+    animation: drop var(--duration-normal) var(--easing-standard);
+  }
+
+  .menuNav {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  /* No menu o ativo é marcado por uma faixa lateral, não pelo sublinhado. */
+  .menuLink {
+    min-height: 48px;
+    padding: 0 var(--space-3);
+    border-bottom: 0;
+    border-left: 3px solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-md);
+  }
+
+  .menuLink:hover {
+    background: color-mix(in srgb, var(--color-on-header) 8%, transparent);
+  }
+
+  .menuLink.navLinkActive {
+    border-left-color: var(--brand-amber-500);
+    background: color-mix(in srgb, var(--color-on-header) 8%, transparent);
+  }
+
+  .menuFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-3);
+    border-top: 1px solid color-mix(in srgb, var(--color-on-header) 16%, transparent);
+  }
+
+  .menuFooter .user {
+    display: flex;
+  }
+
+  .menuFooter button {
+    color: var(--color-on-header);
   }
 }
 
 @media (max-width: 640px) {
-  .headerInner,
-  .main {
+  .headerInner {
     padding-left: var(--space-4);
     padding-right: var(--space-4);
   }
 
-  .userName,
-  .logoutLabel {
-    display: none;
+  .main {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+    padding-top: var(--space-4);
   }
 }
 
-@media (max-width: 900px) {
-  .brandAndNav {
-    gap: var(--space-3);
-  }
-
-  /* No mobile o menu vira só ícones; o rótulo continua acessível via aria-label do link. */
-  .navLabel {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-  }
-
-  .user {
-    display: none;
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 }
