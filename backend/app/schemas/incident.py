@@ -83,8 +83,20 @@ class IncidentFilters(StrictModel):
     category: list[Category] = Field(default_factory=list)
     status: list[Status] = Field(default_factory=list)
     search: Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)] = ""
+    reported_from: AwareDatetime | None = Field(
+        default=None, description="Ocorridos a partir deste instante (ISO 8601 com fuso)."
+    )
+    reported_to: AwareDatetime | None = Field(
+        default=None, description="Ocorridos até este instante (ISO 8601 com fuso)."
+    )
     limit: int = Field(default=200, ge=1, le=500)
     offset: int = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def require_ordered_period(self) -> Self:
+        if self.reported_from and self.reported_to and self.reported_from > self.reported_to:
+            raise ValueError("reported_from deve ser anterior a reported_to")
+        return self
 
 
 class AssigneeRead(BaseModel):

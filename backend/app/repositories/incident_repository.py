@@ -93,6 +93,10 @@ class IncidentRepository:
             conditions.append(Incident.category.in_(filters.category))
         if filters.status:
             conditions.append(Incident.status.in_(filters.status))
+        if filters.reported_from:
+            conditions.append(Incident.reported_at >= filters.reported_from)
+        if filters.reported_to:
+            conditions.append(Incident.reported_at <= filters.reported_to)
         if filters.search:
             pattern = f"%{_escape_like(filters.search)}%"
             conditions.append(
