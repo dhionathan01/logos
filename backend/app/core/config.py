@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     ingestion_api_key: SecretStr = SecretStr("dev-ingestion-key")
 
     cors_origins: list[str] = ["http://localhost:5173"]
+    realtime_enabled: bool = Field(
+        default=True, description="Escuta o canal do PostgreSQL para o stream em tempo real."
+    )
 
 
 @lru_cache
