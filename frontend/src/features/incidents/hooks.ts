@@ -10,17 +10,23 @@ import { toast } from "sonner";
 
 import { ApiError, NetworkError } from "../../api/httpClient";
 import type { Incident, IncidentCreate, IncidentPage, IncidentStatus, User } from "../../api/types";
+import { realtimeStore } from "../../realtime/realtimeStore";
 import { useSession } from "../auth/useSession";
 import { incidentKeys, incidentsApi } from "./api";
 import type { IncidentFilters } from "./filters";
 import { STATUS_CHANGE_FEEDBACK } from "./labels";
 
 const POLL_INTERVAL_MS = 5_000;
+/** Com o stream ao vivo, o polling vira só rede de segurança (ADR-0014). */
+const SAFETY_POLL_INTERVAL_MS = 30_000;
 const statusMutationKey = [...incidentKeys.all, "change-status"] as const;
 
+const pollInterval = () => (realtimeStore.isLive() ? SAFETY_POLL_INTERVAL_MS : POLL_INTERVAL_MS);
+
 /**
- * Fila de incidentes com atualização periódica. O polling pausa enquanto há
- * uma alteração em andamento, para não sobrescrever a atualização otimista.
+ * Fila de incidentes: atualizada pelo stream em tempo real, com polling de reserva.
+ * O polling pausa enquanto há uma alteração em andamento, para não sobrescrever
+ * a atualização otimista.
  */
 export function useIncidents(filters: IncidentFilters) {
   const queryClient = useQueryClient();
@@ -29,7 +35,7 @@ export function useIncidents(filters: IncidentFilters) {
     queryFn: ({ signal }) => incidentsApi.list(filters, signal),
     placeholderData: keepPreviousData,
     refetchInterval: () =>
-      queryClient.isMutating({ mutationKey: statusMutationKey }) > 0 ? false : POLL_INTERVAL_MS,
+      queryClient.isMutating({ mutationKey: statusMutationKey }) > 0 ? false : pollInterval(),
   });
 }
 
@@ -37,7 +43,7 @@ export function useIncidentSummary() {
   return useQuery({
     queryKey: incidentKeys.summary(),
     queryFn: ({ signal }) => incidentsApi.summary(signal),
-    refetchInterval: POLL_INTERVAL_MS,
+    refetchInterval: pollInterval,
   });
 }
 
