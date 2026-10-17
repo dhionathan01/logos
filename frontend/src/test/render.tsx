@@ -59,6 +59,8 @@ export function buildIncident(overrides: Partial<Incident> = {}): Incident {
     assignee: null,
     version: 1,
     reported_at: new Date(Date.now() - 10 * 60_000).toISOString(),
+    first_claimed_at: null,
+    closed_at: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,
