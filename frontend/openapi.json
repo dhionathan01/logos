@@ -534,6 +534,58 @@
         }
       }
     },
+    "/api/incidents/{incident_id}/events": {
+      "get": {
+        "tags": [
+          "incidents"
+        ],
+        "summary": "Histórico de alterações (auditoria)",
+        "operationId": "list_events_api_incidents__incident_id__events_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentEventRead"
+                  },
+                  "title": "Response List Events Api Incidents  Incident Id  Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/incidents/{incident_id}/status": {
       "patch": {
         "tags": [
@@ -591,10 +643,215 @@
           }
         }
       }
+    },
+    "/api/analytics": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Indicadores de volume, resolução e SLA por categoria, criticidade e analista",
+        "operationId": "report_api_analytics_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "reported_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reported From"
+            }
+          },
+          {
+            "name": "reported_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reported To"
+            }
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Fuso usado para agrupar a série diária.",
+              "default": "America/Sao_Paulo",
+              "title": "Tz"
+            },
+            "description": "Fuso usado para agrupar a série diária."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AnalystStats": {
+        "properties": {
+          "analyst": {
+            "$ref": "#/components/schemas/AssigneeRead"
+          },
+          "assigned": {
+            "type": "integer",
+            "title": "Assigned",
+            "description": "Incidentes sob responsabilidade do analista."
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed"
+          },
+          "resolution_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Rate"
+          },
+          "avg_resolution_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Resolution Minutes"
+          },
+          "resolution_sla_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Sla Rate"
+          },
+          "by_category": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": "object",
+            "title": "By Category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analyst",
+          "assigned",
+          "closed",
+          "resolution_rate",
+          "avg_resolution_minutes",
+          "resolution_sla_rate",
+          "by_category"
+        ],
+        "title": "AnalystStats"
+      },
+      "AnalyticsReport": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "overview": {
+            "$ref": "#/components/schemas/Overview"
+          },
+          "by_category": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryStats"
+            },
+            "type": "array",
+            "title": "By Category"
+          },
+          "by_severity": {
+            "items": {
+              "$ref": "#/components/schemas/SeverityStats"
+            },
+            "type": "array",
+            "title": "By Severity"
+          },
+          "by_analyst": {
+            "items": {
+              "$ref": "#/components/schemas/AnalystStats"
+            },
+            "type": "array",
+            "title": "By Analyst"
+          },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/DailyPoint"
+            },
+            "type": "array",
+            "title": "Daily"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "overview",
+          "by_category",
+          "by_severity",
+          "by_analyst",
+          "daily"
+        ],
+        "title": "AnalyticsReport"
+      },
       "AssigneeRead": {
         "properties": {
           "id": {
@@ -624,6 +881,97 @@
           "road_block"
         ],
         "title": "Category"
+      },
+      "CategoryStats": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed"
+          },
+          "resolution_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Rate"
+          },
+          "avg_resolution_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Resolution Minutes"
+          },
+          "resolution_sla_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Sla Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "total",
+          "closed",
+          "resolution_rate",
+          "avg_resolution_minutes",
+          "resolution_sla_rate"
+        ],
+        "title": "CategoryStats"
+      },
+      "DailyPoint": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "reported": {
+            "type": "integer",
+            "title": "Reported"
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "reported",
+          "closed"
+        ],
+        "title": "DailyPoint"
+      },
+      "EventType": {
+        "type": "string",
+        "enum": [
+          "created",
+          "status_changed",
+          "details_updated"
+        ],
+        "title": "EventType"
       },
       "HTTPValidationError": {
         "properties": {
@@ -707,6 +1055,77 @@
           "location"
         ],
         "title": "IncidentCreate"
+      },
+      "IncidentEventRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "from_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "to_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "changes": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Changes"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssigneeRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ausente quando veio de um sistema da frota."
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "event_type",
+          "from_status",
+          "to_status",
+          "changes",
+          "actor",
+          "occurred_at"
+        ],
+        "title": "IncidentEventRead"
       },
       "IncidentPage": {
         "properties": {
@@ -801,6 +1220,30 @@
             "format": "date-time",
             "title": "Reported At"
           },
+          "first_claimed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Claimed At"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -826,6 +1269,8 @@
           "assignee",
           "version",
           "reported_at",
+          "first_claimed_at",
+          "closed_at",
           "created_at",
           "updated_at"
         ],
@@ -958,6 +1403,100 @@
         ],
         "title": "LoginRequest"
       },
+      "Overview": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "active": {
+            "type": "integer",
+            "title": "Active"
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed"
+          },
+          "inconclusive": {
+            "type": "integer",
+            "title": "Inconclusive"
+          },
+          "resolution_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Rate"
+          },
+          "avg_response_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Response Minutes"
+          },
+          "avg_resolution_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Resolution Minutes"
+          },
+          "response_sla_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Sla Rate"
+          },
+          "resolution_sla_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Sla Rate"
+          },
+          "breaching_now": {
+            "type": "integer",
+            "title": "Breaching Now",
+            "description": "Ativos que já passaram do prazo de resolução."
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "active",
+          "closed",
+          "inconclusive",
+          "resolution_rate",
+          "avg_response_minutes",
+          "avg_resolution_minutes",
+          "response_sla_rate",
+          "resolution_sla_rate",
+          "breaching_now"
+        ],
+        "title": "Overview"
+      },
       "Severity": {
         "type": "string",
         "enum": [
@@ -966,6 +1505,91 @@
           "low"
         ],
         "title": "Severity"
+      },
+      "SeverityStats": {
+        "properties": {
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed"
+          },
+          "response_target_minutes": {
+            "type": "integer",
+            "title": "Response Target Minutes"
+          },
+          "resolution_target_minutes": {
+            "type": "integer",
+            "title": "Resolution Target Minutes"
+          },
+          "avg_response_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Response Minutes"
+          },
+          "avg_resolution_minutes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Resolution Minutes"
+          },
+          "response_sla_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Sla Rate"
+          },
+          "resolution_sla_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Sla Rate"
+          },
+          "breaching_now": {
+            "type": "integer",
+            "title": "Breaching Now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "severity",
+          "total",
+          "closed",
+          "response_target_minutes",
+          "resolution_target_minutes",
+          "avg_response_minutes",
+          "avg_resolution_minutes",
+          "response_sla_rate",
+          "resolution_sla_rate",
+          "breaching_now"
+        ],
+        "title": "SeverityStats"
       },
       "Status": {
         "type": "string",

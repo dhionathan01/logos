@@ -126,6 +126,23 @@ export interface paths {
         patch: operations["update_incident_api_incidents__incident_id__patch"];
         trace?: never;
     };
+    "/api/incidents/{incident_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Histórico de alterações (auditoria) */
+        get: operations["list_events_api_incidents__incident_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/incidents/{incident_id}/status": {
         parameters: {
             query?: never;
@@ -143,10 +160,65 @@ export interface paths {
         patch: operations["change_status_api_incidents__incident_id__status_patch"];
         trace?: never;
     };
+    "/api/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Indicadores de volume, resolução e SLA por categoria, criticidade e analista */
+        get: operations["report_api_analytics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnalystStats */
+        AnalystStats: {
+            analyst: components["schemas"]["AssigneeRead"];
+            /**
+             * Assigned
+             * @description Incidentes sob responsabilidade do analista.
+             */
+            assigned: number;
+            /** Closed */
+            closed: number;
+            /** Resolution Rate */
+            resolution_rate: number | null;
+            /** Avg Resolution Minutes */
+            avg_resolution_minutes: number | null;
+            /** Resolution Sla Rate */
+            resolution_sla_rate: number | null;
+            /** By Category */
+            by_category: {
+                [key: string]: number;
+            };
+        };
+        /** AnalyticsReport */
+        AnalyticsReport: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            overview: components["schemas"]["Overview"];
+            /** By Category */
+            by_category: components["schemas"]["CategoryStats"][];
+            /** By Severity */
+            by_severity: components["schemas"]["SeverityStats"][];
+            /** By Analyst */
+            by_analyst: components["schemas"]["AnalystStats"][];
+            /** Daily */
+            daily: components["schemas"]["DailyPoint"][];
+        };
         /** AssigneeRead */
         AssigneeRead: {
             /**
@@ -162,6 +234,37 @@ export interface components {
          * @enum {string}
          */
         Category: "vehicle_accident" | "accident_with_victims" | "adverse_weather" | "mechanical_failure" | "road_block";
+        /** CategoryStats */
+        CategoryStats: {
+            category: components["schemas"]["Category"];
+            /** Total */
+            total: number;
+            /** Closed */
+            closed: number;
+            /** Resolution Rate */
+            resolution_rate: number | null;
+            /** Avg Resolution Minutes */
+            avg_resolution_minutes: number | null;
+            /** Resolution Sla Rate */
+            resolution_sla_rate: number | null;
+        };
+        /** DailyPoint */
+        DailyPoint: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Reported */
+            reported: number;
+            /** Closed */
+            closed: number;
+        };
+        /**
+         * EventType
+         * @enum {string}
+         */
+        EventType: "created" | "status_changed" | "details_updated";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -194,6 +297,28 @@ export interface components {
              * @description Quando o incidente ocorreu. Padrão: agora.
              */
             reported_at?: string | null;
+        };
+        /** IncidentEventRead */
+        IncidentEventRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            event_type: components["schemas"]["EventType"];
+            from_status: components["schemas"]["Status"] | null;
+            to_status: components["schemas"]["Status"] | null;
+            /** Changes */
+            changes: {
+                [key: string]: unknown;
+            } | null;
+            /** @description Ausente quando veio de um sistema da frota. */
+            actor: components["schemas"]["AssigneeRead"] | null;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
         };
         /** IncidentPage */
         IncidentPage: {
@@ -234,6 +359,10 @@ export interface components {
              * Format: date-time
              */
             reported_at: string;
+            /** First Claimed At */
+            first_claimed_at: string | null;
+            /** Closed At */
+            closed_at: string | null;
             /**
              * Created At
              * Format: date-time
@@ -279,11 +408,59 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** Overview */
+        Overview: {
+            /** Total */
+            total: number;
+            /** Active */
+            active: number;
+            /** Closed */
+            closed: number;
+            /** Inconclusive */
+            inconclusive: number;
+            /** Resolution Rate */
+            resolution_rate: number | null;
+            /** Avg Response Minutes */
+            avg_response_minutes: number | null;
+            /** Avg Resolution Minutes */
+            avg_resolution_minutes: number | null;
+            /** Response Sla Rate */
+            response_sla_rate: number | null;
+            /** Resolution Sla Rate */
+            resolution_sla_rate: number | null;
+            /**
+             * Breaching Now
+             * @description Ativos que já passaram do prazo de resolução.
+             */
+            breaching_now: number;
+        };
         /**
          * Severity
          * @enum {string}
          */
         Severity: "high" | "medium" | "low";
+        /** SeverityStats */
+        SeverityStats: {
+            severity: components["schemas"]["Severity"];
+            /** Total */
+            total: number;
+            /** Closed */
+            closed: number;
+            /** Response Target Minutes */
+            response_target_minutes: number;
+            /** Resolution Target Minutes */
+            resolution_target_minutes: number;
+            /** Avg Response Minutes */
+            avg_response_minutes: number | null;
+            /** Avg Resolution Minutes */
+            avg_resolution_minutes: number | null;
+            /** Response Sla Rate */
+            response_sla_rate: number | null;
+            /** Resolution Sla Rate */
+            resolution_sla_rate: number | null;
+            /** Breaching Now */
+            breaching_now: number;
+        };
         /**
          * Status
          * @enum {string}
@@ -643,6 +820,37 @@ export interface operations {
             };
         };
     };
+    list_events_api_incidents__incident_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentEventRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     change_status_api_incidents__incident_id__status_patch: {
         parameters: {
             query?: never;
@@ -665,6 +873,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["IncidentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    report_api_analytics_get: {
+        parameters: {
+            query?: {
+                reported_from?: string | null;
+                reported_to?: string | null;
+                /** @description Fuso usado para agrupar a série diária. */
+                tz?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyticsReport"];
                 };
             };
             /** @description Validation Error */
