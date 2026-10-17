@@ -37,7 +37,8 @@ export function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
-        <Toaster position="bottom-right" theme={theme} richColors closeButton />
+        {/* À esquerda: o lado direito é do painel do chat, que não pode ficar coberto. */}
+        <Toaster position="bottom-left" theme={theme} richColors closeButton />
       </QueryClientProvider>
     </ErrorBoundary>
   );

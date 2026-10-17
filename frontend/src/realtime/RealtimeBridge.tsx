@@ -49,8 +49,13 @@ export function RealtimeBridge() {
       }
       if (message.author?.id === userId) return;
       chatUiStore.messageArrived();
-      // Pedido direcionado a mim chama atenção mesmo com o chat fechado.
-      if (message.handover?.status === "pending" && message.handover.owner.id === userId) {
+      // Pedido direcionado a mim chama atenção quando o chat está fechado
+      // (aberto, o próprio cartão destacado no chat já cumpre esse papel).
+      if (
+        !chatUiStore.getState().isOpen &&
+        message.handover?.status === "pending" &&
+        message.handover.owner.id === userId
+      ) {
         toast.info(message.body, {
           action: { label: "Responder", onClick: () => chatUiStore.open() },
         });
