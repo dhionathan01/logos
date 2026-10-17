@@ -31,11 +31,20 @@ describe("toApiQuery", () => {
       status: ["open"],
       search: "  BR-116 ",
       period: ALL_TIME,
+      pagination: { page: 2, pageSize: 50, showAll: false },
     });
 
     expect(query.toString()).toBe(
-      "severity=high&severity=medium&category=road_block&status=open&search=BR-116",
+      "severity=high&severity=medium&category=road_block&status=open&search=BR-116" +
+        "&limit=50&offset=50",
     );
+  });
+
+  it("paginação não conta como filtro personalizado", () => {
+    const filters = parseFilters(new URLSearchParams("page=3&size=100&all=1"));
+
+    expect(filters.pagination).toEqual({ page: 3, pageSize: 100, showAll: true });
+    expect(hasCustomFilters(filters)).toBe(false);
   });
 
   it("envia o início do período calculado no momento da busca", () => {
