@@ -18,8 +18,10 @@ from app.core.errors import (
     VersionConflictError,
 )
 from app.core.security import AuthenticatedUser
+from app.domain.chat import Notice, ends_assignment, notice_for_transition
 from app.domain.incident import (
     EventType,
+    Severity,
     Status,
     can_transition,
     default_severity_for,
@@ -28,6 +30,7 @@ from app.domain.incident import (
 )
 from app.models import Incident, IncidentEvent
 from app.repositories.event_repository import EventRepository
+from app.repositories.handover_repository import HandoverRepository
 from app.repositories.incident_repository import IncidentRepository
 from app.schemas.incident import (
     IncidentCreate,
@@ -37,6 +40,15 @@ from app.schemas.incident import (
     IncidentUpdate,
     StatusChange,
 )
+from app.services.central_feed import CentralFeed, incident_ref
+
+NOTICE_VERB: dict[Notice, str] = {
+    Notice.CLAIMED: "assumiu",
+    Notice.RESUMED: "retomou a investigação de",
+    Notice.RELEASED: "devolveu à fila",
+    Notice.CLOSED: "fechou",
+    Notice.MARKED_INCONCLUSIVE: "marcou como inconclusivo",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,6 +64,8 @@ class IncidentService:
         self._session = session
         self._incidents = IncidentRepository(session)
         self._events = EventRepository(session)
+        self._handovers = HandoverRepository(session)
+        self._feed = CentralFeed(session)
 
     @retry_transient_db_errors
     def list_incidents(self, filters: IncidentFilters) -> tuple[list[Incident], int]:
@@ -111,6 +125,14 @@ class IncidentService:
                     reporter.id if reporter else None,
                     to_status=Status.OPEN,
                 )
+                self._feed.incident_changed(incident.id)
+                if incident.severity == Severity.HIGH:
+                    self._feed.post(
+                        f"Novo incidente de alta criticidade: {incident_ref(incident)}, "
+                        f"{incident.location}.",
+                        notice=Notice.NEW_HIGH_SEVERITY,
+                        incident_id=incident.id,
+                    )
         except IntegrityError:
             # Dois reenvios simultâneos com a mesma chave: o segundo perde a corrida
             # no índice único e devolve o registro que o primeiro criou.
@@ -141,10 +163,21 @@ class IncidentService:
             }
             updated = self._apply(incident, data.version, changes)
             self._events.record(incident.id, EventType.DETAILS_UPDATED, actor.id, changes=diff)
+            self._feed.incident_changed(incident.id)
             return updated
 
     @retry_transient_db_errors
     def change_status(
+        self, incident_id: uuid.UUID, change: StatusChange, actor: AuthenticatedUser
+    ) -> Incident:
+        try:
+            return self._change_status(incident_id, change, actor)
+        except (VersionConflictError, NotAssigneeError):
+            if change.status == Status.INVESTIGATING:
+                self._record_claim_conflict(incident_id, actor)
+            raise
+
+    def _change_status(
         self, incident_id: uuid.UUID, change: StatusChange, actor: AuthenticatedUser
     ) -> Incident:
         with self._session.begin():
@@ -182,7 +215,43 @@ class IncidentService:
                 if change.resolution_note
                 else None,
             )
+            self._announce_status_change(updated, incident_status_before, change.status, actor)
             return updated
+
+    def _announce_status_change(
+        self, incident: Incident, previous: Status, target: Status, actor: AuthenticatedUser
+    ) -> None:
+        notice = notice_for_transition(previous, target)
+        self._feed.post(
+            f"{actor.display_name} {NOTICE_VERB[notice]} {incident_ref(incident)}.",
+            notice=notice,
+            author_id=actor.id,
+            incident_id=incident.id,
+        )
+        self._feed.incident_changed(incident.id)
+        if ends_assignment(target):
+            for handover_id in self._handovers.cancel_pending_for(incident.id):
+                self._feed.post(
+                    f"Pedido para assumir {incident_ref(incident)} encerrado: o incidente foi "
+                    f"{'devolvido à fila' if target == Status.OPEN else 'fechado'}.",
+                    notice=Notice.HANDOVER_CANCELLED,
+                    incident_id=incident.id,
+                    handover_id=handover_id,
+                )
+
+    def _record_claim_conflict(self, incident_id: uuid.UUID, actor: AuthenticatedUser) -> None:
+        """A tentativa que perdeu a corrida também vira registro visível para a central."""
+        with self._session.begin():
+            incident = self._incidents.get(incident_id)
+            if incident is None or incident.assignee is None or incident.assignee_id == actor.id:
+                return
+            self._feed.post(
+                f"{actor.display_name} tentou assumir {incident_ref(incident)}, mas "
+                f"{incident.assignee.display_name} já está investigando.",
+                notice=Notice.CLAIM_CONFLICT,
+                author_id=actor.id,
+                incident_id=incident.id,
+            )
 
     @retry_transient_db_errors
     def delete_incident(self, incident_id: uuid.UUID, version: int) -> None:
@@ -195,6 +264,7 @@ class IncidentService:
                 )
             if not self._incidents.delete_if_version(incident_id, version):
                 self._raise_conflict(incident_id)
+            self._feed.incident_changed(incident_id)
 
     def _apply(self, incident: Incident, version: int, values: dict[str, Any]) -> Incident:
         if not self._incidents.update_if_version(incident.id, version, values):
