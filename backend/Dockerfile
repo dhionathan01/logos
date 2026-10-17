@@ -19,7 +19,8 @@ RUN mkdir app && touch app/__init__.py && pip install . && rm -rf app build
 COPY alembic.ini docker-entrypoint.sh ./
 COPY alembic ./alembic
 COPY app ./app
-RUN chmod +x docker-entrypoint.sh
+# Bytecode pronto na imagem: a VM de 1 vCPU não recompila o código a cada inicialização.
+RUN chmod +x docker-entrypoint.sh && python -m compileall -q app alembic
 USER logos
 ENTRYPOINT ["./docker-entrypoint.sh"]
 EXPOSE 8000
