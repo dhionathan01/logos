@@ -16,5 +16,6 @@ Cada decisão de arquitetura relevante é registrada aqui, no formato curto de A
 | [0010](0010-design-tokens-e-design-da-informacao.md) | Design tokens da AutoU e design da informação | Aceito |
 | [0011](0011-ci-cd-e-deploy-na-vps.md) | CI/CD com GitHub Actions e deploy em Docker na VPS | Aceito |
 | [0012](0012-estrategia-de-testes.md) | Estratégia de testes | Aceito |
+| [0013](0013-auditoria-sla-e-indicadores.md) | Auditoria de eventos, SLA por criticidade e indicadores | Aceito |
 
 Modelo: [`template.md`](template.md).
