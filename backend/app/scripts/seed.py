@@ -112,10 +112,12 @@ def seed_incidents(analysts: list[User], count: int = INCIDENT_COUNT) -> int:
 
 
 def _minutes_ago(rng: random.Random, status: Status) -> int:
-    """Abertos são recentes (a central reage rápido); concluídos podem ser de horas atrás."""
+    """Abertos são recentes (a central reage rápido); concluídos se espalham pela semana."""
     if status == Status.OPEN:
         return int(rng.triangular(1, 90, 8))
-    return rng.randint(20, 480)
+    if status == Status.INVESTIGATING:
+        return rng.randint(20, 480)
+    return rng.randint(60, 7 * 24 * 60)
 
 
 def _vary_severity(rng: random.Random, category: Category) -> Severity:
