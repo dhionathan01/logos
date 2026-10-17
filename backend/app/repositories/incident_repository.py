@@ -16,6 +16,13 @@ _status_order = case(
     {status.value: rank for status, rank in STATUS_RANK.items()}, value=Incident.status
 )
 
+_ORDERINGS: dict[str, tuple[Any, ...]] = {
+    # Fila: criticidade, depois o que ainda exige ação, depois o mais antigo.
+    "priority": (_severity_order, _status_order, Incident.reported_at.asc()),
+    # Histórico: o que foi concluído (ou mexido) por último aparece primeiro.
+    "recent": (func.coalesce(Incident.closed_at, Incident.updated_at).desc(), Incident.id),
+}
+
 
 class IncidentRepository:
     def __init__(self, session: Session) -> None:
@@ -24,11 +31,10 @@ class IncidentRepository:
     def search(self, filters: IncidentFilters) -> tuple[list[Incident], int]:
         conditions = self._conditions(filters)
         total = self._session.scalar(select(func.count(Incident.id)).where(*conditions)) or 0
-        # Prioridade: criticidade, depois o que ainda exige ação, depois o mais antigo.
         query = (
             select(Incident)
             .where(*conditions)
-            .order_by(_severity_order, _status_order, Incident.reported_at.asc())
+            .order_by(*_ORDERINGS[filters.sort])
             .limit(filters.limit)
             .offset(filters.offset)
         )
@@ -121,6 +127,8 @@ class IncidentRepository:
             conditions.append(Incident.category.in_(filters.category))
         if filters.status:
             conditions.append(Incident.status.in_(filters.status))
+        if filters.assignee:
+            conditions.append(Incident.assignee_id.in_(filters.assignee))
         if filters.reported_from:
             conditions.append(Incident.reported_at >= filters.reported_from)
         if filters.reported_to:

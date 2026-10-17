@@ -114,6 +114,52 @@ def test_list_filters_by_reported_period(client: TestClient, auth_headers, creat
     assert [item["id"] for item in response.json()["items"]] == [recent["id"]]
 
 
+def test_list_by_assignee_keeps_who_closed(
+    client: TestClient, auth_headers, create_incident, analysts
+) -> None:
+    ana, bruno = auth_headers("ana"), auth_headers("bruno")
+    claimed = create_incident(title="Assumido pela Ana")
+    closed = create_incident(title="Concluído pela Ana")
+    create_incident(title="Do Bruno")
+    for incident in (claimed, closed):
+        _patch_status(client, ana, incident["id"], status="investigating", version=1)
+    _patch_status(client, ana, closed["id"], status="closed", version=2)
+    others = client.get("/api/incidents", headers=bruno).json()["items"]
+    from_bruno = next(item for item in others if item["title"] == "Do Bruno")
+    _patch_status(client, bruno, from_bruno["id"], status="investigating", version=1)
+
+    def titles(**params: object) -> list[str]:
+        response = client.get(
+            "/api/incidents", params={"assignee": [str(analysts["ana"].id)], **params}, headers=ana
+        )
+        assert response.status_code == 200
+        return [item["title"] for item in response.json()["items"]]
+
+    assert titles(status=["investigating", "inconclusive"]) == ["Assumido pela Ana"]
+    assert titles(status=["closed"], sort="recent") == ["Concluído pela Ana"]
+
+
+def test_recent_sort_lists_latest_closed_first(
+    client: TestClient, auth_headers, create_incident
+) -> None:
+    headers = auth_headers("ana")
+    first, second = create_incident(title="Primeiro"), create_incident(title="Segundo")
+    for incident in (first, second):
+        _patch_status(client, headers, incident["id"], status="investigating", version=1)
+        _patch_status(client, headers, incident["id"], status="closed", version=2)
+
+    response = client.get(
+        "/api/incidents", params={"status": ["closed"], "sort": "recent"}, headers=headers
+    )
+
+    assert [item["title"] for item in response.json()["items"]] == ["Segundo", "Primeiro"]
+
+
+def _patch_status(client: TestClient, headers: dict, incident_id: str, **body: object) -> None:
+    response = client.patch(f"/api/incidents/{incident_id}/status", json=body, headers=headers)
+    assert response.status_code == 200, response.text
+
+
 @pytest.mark.parametrize(
     "params",
     [
@@ -142,6 +188,8 @@ def test_list_rejects_unknown_filters_and_huge_pages(client: TestClient, auth_he
     headers = auth_headers("ana")
     assert client.get("/api/incidents?limit=10000", headers=headers).status_code == 422
     assert client.get("/api/incidents?severity=urgente", headers=headers).status_code == 422
+    assert client.get("/api/incidents?assignee=ana", headers=headers).status_code == 422
+    assert client.get("/api/incidents?sort=random", headers=headers).status_code == 422
 
 
 def test_summary_counts_active_incidents(client: TestClient, auth_headers, create_incident) -> None:

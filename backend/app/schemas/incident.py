@@ -1,6 +1,6 @@
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, Any, Self
+from typing import Annotated, Any, Literal, Self
 
 from pydantic import (
     AwareDatetime,
@@ -88,6 +88,14 @@ class IncidentFilters(StrictModel):
     )
     reported_to: AwareDatetime | None = Field(
         default=None, description="Ocorridos até este instante (ISO 8601 com fuso)."
+    )
+    assignee: list[uuid.UUID] = Field(
+        default_factory=list,
+        description="Responsáveis. Fechados mantêm quem concluiu, então isto lista o histórico.",
+    )
+    sort: Literal["priority", "recent"] = Field(
+        default="priority",
+        description="priority: criticidade e idade (fila). recent: últimos concluídos/alterados.",
     )
     limit: int = Field(default=200, ge=1, le=500)
     offset: int = Field(default=0, ge=0)
