@@ -28,6 +28,7 @@ class EventType(StrEnum):
     CREATED = "created"
     STATUS_CHANGED = "status_changed"
     DETAILS_UPDATED = "details_updated"
+    ASSIGNEE_CHANGED = "assignee_changed"
 
 
 DEFAULT_SEVERITY_BY_CATEGORY: dict[Category, Severity] = {
