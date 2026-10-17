@@ -1,0 +1,136 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.refreshing {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Ao trocar o período, mantém o painel anterior esmaecido: sem piscar, sem pular layout. */
+.content {
+  display: grid;
+  gap: var(--space-5);
+  transition: opacity var(--duration-normal) var(--easing-standard);
+}
+
+.content[data-dimmed] {
+  opacity: 0.6;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  overflow-x: auto;
+}
+
+.panel > * {
+  min-width: 0;
+}
+
+.panelHeader h2 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.panelHeader p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.stale {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.loading {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.placeholder {
+  height: 160px;
+  border-radius: var(--radius-card);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-surface-hover) 50%,
+    var(--color-surface-sunken) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+.error {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-6);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.error h2 {
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+}
+
+.error svg {
+  color: var(--color-danger);
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .panel {
+    padding: var(--space-4);
+  }
+}
