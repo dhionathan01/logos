@@ -16,10 +16,12 @@ FROM base AS runtime
 RUN groupadd --system logos && useradd --system --gid logos --no-create-home logos
 COPY pyproject.toml ./
 RUN mkdir app && touch app/__init__.py && pip install . && rm -rf app build
-COPY alembic.ini ./
+COPY alembic.ini docker-entrypoint.sh ./
 COPY alembic ./alembic
 COPY app ./app
+RUN chmod +x docker-entrypoint.sh
 USER logos
+ENTRYPOINT ["./docker-entrypoint.sh"]
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/live', timeout=2)"
