@@ -25,9 +25,10 @@ from app.repositories.user_repository import UserRepository
 logger = logging.getLogger("seed")
 
 DEMO_PASSWORD = "logos2026"  # noqa: S105  senha pública de demonstração, exibida no login
-CURRENT_QUEUE_SIZE = 70
-HISTORY_SIZE = 300
 HISTORY_DAYS = 30
+ARRIVALS_PER_DAY = 160
+INCIDENT_COUNT = ARRIVALS_PER_DAY * HISTORY_DAYS
+BACKLOG_WINDOW = timedelta(hours=4)
 
 
 @dataclass(frozen=True)
@@ -157,11 +158,9 @@ def seed_incidents(users: dict[str, User]) -> int:
         if session.scalar(select(func.count(Incident.id))):
             return 0
         generator = _Generator(session, rng, now, users)
-        for _ in range(HISTORY_SIZE):
-            generator.historical()
-        for _ in range(CURRENT_QUEUE_SIZE):
-            generator.current()
-    return HISTORY_SIZE + CURRENT_QUEUE_SIZE
+        for _ in range(INCIDENT_COUNT):
+            generator.incident()
+    return INCIDENT_COUNT
 
 
 class _Generator:
@@ -173,52 +172,49 @@ class _Generator:
         self._now = now
         self._users = users
 
-    def historical(self) -> None:
-        """Incidente já tratado nos últimos 30 dias (resolvido ou inconclusivo)."""
-        reported_at = self._now - timedelta(minutes=self._rng.randint(12 * 60, HISTORY_DAYS * 1440))
+    def incident(self) -> None:
+        """Um incidente num processo de chegadas uniformes: o status decorre da idade.
+
+        Ainda não deu tempo de alguém assumir → aberto; já assumido, mas ainda não deu
+        tempo de resolver → em investigação; senão → fechado. Assim a fila atual e o
+        histórico são o mesmo fenômeno, e a série diária não tem degraus artificiais.
+        """
+        reported_at = self._now - timedelta(minutes=self._rng.uniform(1, HISTORY_DAYS * 1440))
         category, severity = self._category_and_severity()
         profile = self._pick_analyst(category)
         claimed_at = reported_at + self._duration(TYPICAL_RESPONSE[severity], profile.speed)
         closed_at = claimed_at + self._duration(TYPICAL_RESOLUTION[severity], profile.speed)
-        # Parte do histórico passou por "inconclusivo" antes de ser fechada.
-        went_inconclusive = self._rng.random() < 0.14
-        self._add(
-            category,
-            severity,
-            reported_at,
-            status=Status.CLOSED,
-            assignee=self._users[profile.username],
-            claimed_at=claimed_at,
-            finished_at=closed_at,
-            inconclusive_at=claimed_at + (closed_at - claimed_at) / 2
-            if went_inconclusive
-            else None,
-        )
+        assignee = self._users[profile.username]
 
-    def current(self) -> None:
-        """Fila de agora: a maioria aberta e recente, parte já em investigação."""
-        category, severity = self._category_and_severity()
-        roll = self._rng.random()
-        if roll < 0.7:
-            reported_at = self._now - timedelta(minutes=int(self._rng.triangular(1, 90, 8)))
+        # A premissa do case: a central está sobrecarregada agora, parte do recente espera.
+        is_backlog = self._now - reported_at < BACKLOG_WINDOW and self._rng.random() < 0.75
+        if is_backlog or claimed_at > self._now:
             self._add(category, severity, reported_at, status=Status.OPEN)
-            return
-        profile = self._pick_analyst(category)
-        reported_at = self._now - timedelta(minutes=self._rng.randint(20, 600))
-        claimed_at = min(
-            reported_at + self._duration(TYPICAL_RESPONSE[severity], profile.speed),
-            self._now - timedelta(minutes=1),
-        )
-        status = Status.INVESTIGATING if roll < 0.92 else Status.INCONCLUSIVE
-        self._add(
-            category,
-            severity,
-            reported_at,
-            status=status,
-            assignee=self._users[profile.username],
-            claimed_at=claimed_at,
-            finished_at=self._now - timedelta(minutes=1) if status == Status.INCONCLUSIVE else None,
-        )
+        elif closed_at > self._now:
+            stalled = self._rng.random() < 0.08
+            self._add(
+                category,
+                severity,
+                reported_at,
+                status=Status.INCONCLUSIVE if stalled else Status.INVESTIGATING,
+                assignee=assignee,
+                claimed_at=claimed_at,
+                finished_at=claimed_at + (self._now - claimed_at) / 2 if stalled else None,
+            )
+        else:
+            went_inconclusive = self._rng.random() < 0.14
+            self._add(
+                category,
+                severity,
+                reported_at,
+                status=Status.CLOSED,
+                assignee=assignee,
+                claimed_at=claimed_at,
+                finished_at=closed_at,
+                inconclusive_at=claimed_at + (closed_at - claimed_at) / 2
+                if went_inconclusive
+                else None,
+            )
 
     def _add(
         self,
