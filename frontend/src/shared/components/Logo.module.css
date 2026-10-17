@@ -1,0 +1,50 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-on-header);
+}
+
+.mark {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--brand-amber-500), var(--brand-orange-500));
+}
+
+.wordmark {
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.signature {
+  display: inline-flex;
+  align-items: center;
+  padding-left: var(--space-2);
+  border-left: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  opacity: 0.8;
+}
+
+.autou {
+  display: block;
+  height: 14px;
+  width: auto;
+}
+
+.md .wordmark {
+  font-size: var(--font-size-lg);
+}
+
+.lg .wordmark {
+  font-size: var(--font-size-2xl);
+}
+
+.lg .mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+}
+
+.lg .autou {
+  height: 20px;
+}
