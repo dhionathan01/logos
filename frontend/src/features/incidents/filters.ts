@@ -3,12 +3,14 @@ import { useSearchParams } from "react-router-dom";
 
 import type { Category, IncidentStatus, Severity } from "../../api/types";
 import { ACTIVE_STATUSES, CATEGORIES, SEVERITIES, STATUSES } from "./labels";
+import { type PeriodFilter, parsePeriod, periodToRange } from "./period";
 
 export interface IncidentFilters {
   severity: Severity[];
   category: Category[];
   status: IncidentStatus[];
   search: string;
+  period: PeriodFilter;
 }
 
 function pickAllowed<T extends string>(values: string[], allowed: readonly T[]): T[] {
@@ -27,15 +29,19 @@ export function parseFilters(params: URLSearchParams): IncidentFilters {
     // Gestão por exceção: sem filtro explícito, a fila mostra só o que ainda exige ação.
     status: status.length > 0 ? status : ACTIVE_STATUSES,
     search: (params.get("q") ?? "").slice(0, 100),
+    period: parsePeriod(params),
   };
 }
 
-export function toApiQuery(filters: IncidentFilters): URLSearchParams {
+export function toApiQuery(filters: IncidentFilters, now = Date.now()): URLSearchParams {
   const query = new URLSearchParams();
   filters.severity.forEach((value) => query.append("severity", value));
   filters.category.forEach((value) => query.append("category", value));
   filters.status.forEach((value) => query.append("status", value));
   if (filters.search.trim()) query.set("search", filters.search.trim());
+  const { reportedFrom, reportedTo } = periodToRange(filters.period, now);
+  if (reportedFrom) query.set("reported_from", reportedFrom);
+  if (reportedTo) query.set("reported_to", reportedTo);
   return query;
 }
 
@@ -47,7 +53,8 @@ export function hasCustomFilters(filters: IncidentFilters): boolean {
     filters.severity.length > 0 ||
     filters.category.length > 0 ||
     !isDefaultStatus ||
-    filters.search.trim() !== ""
+    filters.search.trim() !== "" ||
+    filters.period.preset !== "all"
   );
 }
 
@@ -92,6 +99,25 @@ export function useIncidentFilters() {
     [setParams],
   );
 
+  const setPeriod = useCallback(
+    (period: PeriodFilter) => {
+      setParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          ["period", "from", "to"].forEach((key) => next.delete(key));
+          if (period.preset !== "all") next.set("period", period.preset);
+          if (period.preset === "custom") {
+            if (period.from) next.set("from", period.from);
+            if (period.to) next.set("to", period.to);
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setParams],
+  );
+
   const clear = useCallback(() => {
     setParams(
       (current) => {
@@ -104,5 +130,5 @@ export function useIncidentFilters() {
     );
   }, [setParams]);
 
-  return { filters, toggle, setSearch, clear };
+  return { filters, toggle, setSearch, setPeriod, clear };
 }

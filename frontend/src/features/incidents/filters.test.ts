@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { hasCustomFilters, parseFilters, toApiQuery } from "./filters";
+import { ALL_TIME } from "./period";
 
 describe("parseFilters", () => {
   it("mostra só incidentes ativos quando não há filtro de status", () => {
@@ -29,10 +30,19 @@ describe("toApiQuery", () => {
       category: ["road_block"],
       status: ["open"],
       search: "  BR-116 ",
+      period: ALL_TIME,
     });
 
     expect(query.toString()).toBe(
       "severity=high&severity=medium&category=road_block&status=open&search=BR-116",
     );
+  });
+
+  it("envia o início do período calculado no momento da busca", () => {
+    const now = Date.parse("2026-10-16T15:00:00Z");
+    const filters = parseFilters(new URLSearchParams("period=1h"));
+
+    expect(toApiQuery(filters, now).get("reported_from")).toBe("2026-10-16T14:00:00.000Z");
+    expect(hasCustomFilters(filters)).toBe(true);
   });
 });
