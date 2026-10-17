@@ -12,5 +12,6 @@ Cada decisão de arquitetura relevante é registrada aqui, no formato curto de A
 | [0006](0006-autenticacao.md) | JWT para analistas e API key para a frota | Aceito |
 | [0007](0007-concorrencia-otimista-e-atribuicao.md) | Concorrência otimista com versão + atribuição | Aceito |
 | [0008](0008-resiliencia-e-idempotencia.md) | Resiliência a falhas de rede e banco no backend | Aceito |
+| [0010](0010-design-tokens-e-design-da-informacao.md) | Design tokens da AutoU e design da informação | Aceito |
 
 Modelo: [`template.md`](template.md).
