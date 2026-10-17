@@ -6,6 +6,7 @@ from fastapi import APIRouter, Header, Query, Response, status
 from app.api.deps import CurrentUser, IngestionSource, SessionDep
 from app.schemas.incident import (
     IncidentCreate,
+    IncidentEventRead,
     IncidentFilters,
     IncidentPage,
     IncidentRead,
@@ -52,6 +53,14 @@ def get_incident(incident_id: uuid.UUID, session: SessionDep, _: CurrentUser) ->
     return IncidentRead.model_validate(IncidentService(session).get_incident(incident_id))
 
 
+@router.get("/{incident_id}/events", summary="Histórico de alterações (auditoria)")
+def list_events(
+    incident_id: uuid.UUID, session: SessionDep, _: CurrentUser
+) -> list[IncidentEventRead]:
+    events = IncidentService(session).list_events(incident_id)
+    return [IncidentEventRead.model_validate(event) for event in events]
+
+
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
@@ -62,10 +71,10 @@ def create_incident(
     payload: IncidentCreate,
     response: Response,
     session: SessionDep,
-    _: IngestionSource,
+    reporter: IngestionSource,
     idempotency_key: IdempotencyKey = None,
 ) -> IncidentRead:
-    result = IncidentService(session).create_incident(payload, idempotency_key)
+    result = IncidentService(session).create_incident(payload, idempotency_key, reporter)
     if not result.created:
         response.status_code = status.HTTP_200_OK
         response.headers["Idempotent-Replayed"] = "true"

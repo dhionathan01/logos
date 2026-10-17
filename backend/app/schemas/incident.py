@@ -1,6 +1,6 @@
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, Self
+from typing import Annotated, Any, Self
 
 from pydantic import (
     AwareDatetime,
@@ -12,7 +12,7 @@ from pydantic import (
     model_validator,
 )
 
-from app.domain.incident import Category, Severity, Status
+from app.domain.incident import Category, EventType, Severity, Status
 
 # Tolerância para relógios de caminhão levemente adiantados.
 MAX_CLOCK_SKEW = timedelta(minutes=5)
@@ -121,8 +121,22 @@ class IncidentRead(BaseModel):
     assignee: AssigneeRead | None
     version: int
     reported_at: datetime
+    first_claimed_at: datetime | None
+    closed_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+class IncidentEventRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    event_type: EventType
+    from_status: Status | None
+    to_status: Status | None
+    changes: dict[str, Any] | None
+    actor: AssigneeRead | None = Field(description="Ausente quando veio de um sistema da frota.")
+    occurred_at: datetime
 
 
 class IncidentPage(BaseModel):
