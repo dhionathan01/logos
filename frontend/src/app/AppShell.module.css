@@ -105,6 +105,15 @@
   max-width: var(--container-width);
   margin: 0 auto;
   padding: var(--space-6);
+  transition: padding var(--duration-normal) var(--easing-standard);
+}
+
+/* Em telas largas, o chat aberto não cobre a fila: o conteúdo abre espaço para ele. */
+@media (min-width: 1200px) {
+  .main[data-chat-open] {
+    max-width: calc(var(--container-width) + var(--chat-panel-width));
+    padding-right: calc(var(--chat-panel-width) + var(--space-6));
+  }
 }
 
 @media (max-width: 640px) {

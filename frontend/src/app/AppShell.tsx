@@ -5,6 +5,7 @@ import { NavLink } from "react-router-dom";
 import { useSession } from "../features/auth/useSession";
 import { ChatPanel } from "../features/chat/ChatPanel";
 import { ChatToggle } from "../features/chat/ChatToggle";
+import { useChatUi } from "../features/chat/chatUiStore";
 import { RealtimeBridge } from "../realtime/RealtimeBridge";
 import { Button } from "../shared/components/Button";
 import { Logo } from "../shared/components/Logo";
@@ -20,6 +21,7 @@ const NAVIGATION = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useSession();
   const isOnline = useOnlineStatus();
+  const { isOpen: isChatOpen } = useChatUi();
 
   return (
     <div className={styles.shell}>
@@ -76,7 +78,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <main className={styles.main}>{children}</main>
+      <main className={styles.main} data-chat-open={isChatOpen || undefined}>
+        {children}
+      </main>
       <ChatPanel />
       <RealtimeBridge />
     </div>
