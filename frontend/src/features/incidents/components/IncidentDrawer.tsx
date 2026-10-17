@@ -7,6 +7,7 @@ import { Button } from "../../../shared/components/Button";
 import { Dialog } from "../../../shared/components/Dialog";
 import { Spinner } from "../../../shared/components/Spinner";
 import { useSession } from "../../auth/useSession";
+import { HandoverSection } from "../../chat/HandoverSection";
 import {
   useChangeStatus,
   useDeleteIncident,
@@ -123,6 +124,8 @@ function IncidentDetails({ incident, onDeleted }: { incident: Incident; onDelete
           incidente; isso evita que duas pessoas atuem no mesmo problema.
         </p>
       )}
+
+      <HandoverSection incident={incident} />
 
       {canEdit && (
         <section className={styles.section}>
