@@ -7,7 +7,7 @@ import { Dropdown, DropdownOption } from "../../../shared/components/Dropdown";
 import { summarizeSelection } from "../../../shared/components/summarizeSelection";
 import { type PeriodFilter, QUEUE_PERIODS } from "../../../shared/period/period";
 import { PeriodPicker } from "../../../shared/period/PeriodPicker";
-import { type IncidentFilters, hasCustomFilters } from "../filters";
+import { type IncidentFilters, hasCustomFilters, isDefaultStatus } from "../filters";
 import { CATEGORIES, CATEGORY_META, STATUSES, STATUS_LABEL } from "../labels";
 import styles from "./FilterBar.module.css";
 
@@ -62,8 +62,12 @@ export function FilterBar({
       <div className={styles.dropdowns}>
         <Dropdown
           label="Status"
-          summary={summarizeSelection(filters.status.map((status) => STATUS_LABEL[status]))}
-          isActive={filters.status.length > 0}
+          summary={
+            isDefaultStatus(filters.status)
+              ? "Ativos"
+              : summarizeSelection(filters.status.map((status) => STATUS_LABEL[status]))
+          }
+          isActive={!isDefaultStatus(filters.status)}
         >
           {STATUSES.map((status) => (
             <DropdownOption

@@ -53,8 +53,8 @@ describe("Dropdown", () => {
     expect(trigger).toHaveFocus();
   });
 
-  it("resume várias escolhas pela contagem", () => {
-    expect(summarizeSelection(["Aberto", "Fechado"])).toBe("2 selecionados");
+  it("resume várias escolhas pelo primeiro item e a contagem", () => {
+    expect(summarizeSelection(["Aberto", "Fechado", "Inconclusivo"])).toBe("Aberto +2");
     expect(summarizeSelection([], "Todas")).toBe("Todas");
   });
 });

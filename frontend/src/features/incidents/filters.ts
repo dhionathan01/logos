@@ -59,14 +59,19 @@ export function toApiQuery(filters: IncidentFilters, now = Date.now()): URLSearc
   return query;
 }
 
+/** O padrão da fila é ver só os ativos; fechados entram só quando pedidos. */
+export function isDefaultStatus(status: IncidentStatus[]): boolean {
+  return (
+    status.length === ACTIVE_STATUSES.length &&
+    ACTIVE_STATUSES.every((active) => status.includes(active))
+  );
+}
+
 export function hasCustomFilters(filters: IncidentFilters): boolean {
-  const isDefaultStatus =
-    filters.status.length === ACTIVE_STATUSES.length &&
-    ACTIVE_STATUSES.every((status) => filters.status.includes(status));
   return (
     filters.severity.length > 0 ||
     filters.category.length > 0 ||
-    !isDefaultStatus ||
+    !isDefaultStatus(filters.status) ||
     filters.search.trim() !== "" ||
     filters.period.preset !== "all"
   );
