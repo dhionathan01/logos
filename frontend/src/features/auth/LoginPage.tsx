@@ -101,7 +101,7 @@ export function LoginPage() {
                   disabled={login.isPending}
                   onClick={() => signIn({ username: account.username, password: DEMO_PASSWORD })}
                 >
-                  Entrar como {account.name}
+                  Entrar como {account.name.split(" ")[0]}
                 </Button>
               ))}
             </div>
