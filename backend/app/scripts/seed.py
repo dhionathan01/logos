@@ -89,7 +89,7 @@ def seed_incidents(analysts: list[User], count: int = INCIDENT_COUNT) -> int:
     with SessionFactory.begin() as session:
         if session.scalar(select(func.count(Incident.id))):
             return 0
-        for index in range(count):
+        for _ in range(count):
             category = rng.choice(list(Category))
             status = rng.choices(
                 [Status.OPEN, Status.INVESTIGATING, Status.INCONCLUSIVE, Status.CLOSED],
@@ -105,10 +105,17 @@ def seed_incidents(analysts: list[User], count: int = INCIDENT_COUNT) -> int:
                     vehicle_id=f"CAM-{rng.randint(1, 5000):04d}",
                     location=rng.choice(LOCATIONS),
                     assignee_id=None if status == Status.OPEN else rng.choice(analysts).id,
-                    reported_at=now - timedelta(minutes=rng.randint(1, 600) + index),
+                    reported_at=now - timedelta(minutes=_minutes_ago(rng, status)),
                 )
             )
     return count
+
+
+def _minutes_ago(rng: random.Random, status: Status) -> int:
+    """Abertos são recentes (a central reage rápido); concluídos podem ser de horas atrás."""
+    if status == Status.OPEN:
+        return int(rng.triangular(1, 90, 8))
+    return rng.randint(20, 480)
 
 
 def _vary_severity(rng: random.Random, category: Category) -> Severity:
