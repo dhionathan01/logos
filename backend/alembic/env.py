@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 
 from app.core.config import get_settings
 from app.core.db import Base
-from app.models import Incident, User  # noqa: F401  registra as tabelas no metadata
+from app.models import Incident, IncidentEvent, User  # noqa: F401  registra as tabelas
 
 config = context.config
 if config.config_file_name is not None:

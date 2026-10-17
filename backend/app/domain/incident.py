@@ -24,6 +24,12 @@ class Status(StrEnum):
     CLOSED = "closed"
 
 
+class EventType(StrEnum):
+    CREATED = "created"
+    STATUS_CHANGED = "status_changed"
+    DETAILS_UPDATED = "details_updated"
+
+
 DEFAULT_SEVERITY_BY_CATEGORY: dict[Category, Severity] = {
     Category.ACCIDENT_WITH_VICTIMS: Severity.HIGH,
     Category.VEHICLE_ACCIDENT: Severity.HIGH,
