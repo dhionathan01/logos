@@ -18,6 +18,7 @@ import { SEVERITIES, SEVERITY_META, TRANSITION_ACTIONS } from "../labels";
 import { elapsedSince, formatDateTime, formatElapsed, useNow } from "../time";
 import { CategoryLabel, SeverityBadge, StatusBadge } from "./Badges";
 import styles from "./IncidentDrawer.module.css";
+import { IncidentHistory } from "./IncidentHistory";
 
 interface IncidentDrawerProps {
   incidentId: string | null;
@@ -101,6 +102,10 @@ function IncidentDetails({ incident, onDeleted }: { incident: Incident; onDelete
           {incident.assignee ? (isMine ? "Você" : incident.assignee.display_name) : "Ninguém"}
         </Fact>
         <Fact label="Registrado em">{formatDateTime(incident.created_at)}</Fact>
+        <Fact label="Assumido em">
+          {incident.first_claimed_at ? formatDateTime(incident.first_claimed_at) : "Ainda não"}
+        </Fact>
+        {incident.closed_at && <Fact label="Fechado em">{formatDateTime(incident.closed_at)}</Fact>}
         <Fact label="Última atualização">{formatDateTime(incident.updated_at)}</Fact>
       </dl>
 
@@ -208,6 +213,11 @@ function IncidentDetails({ incident, onDeleted }: { incident: Incident; onDelete
           )}
         </div>
       )}
+
+      <section className={styles.section}>
+        <h3>Histórico</h3>
+        <IncidentHistory incidentId={incident.id} />
+      </section>
     </div>
   );
 }

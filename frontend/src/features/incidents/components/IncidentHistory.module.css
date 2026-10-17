@@ -1,0 +1,54 @@
+.timeline {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  border-left: 1px solid var(--color-border-strong);
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  gap: 2px;
+}
+
+/* Marcador sobre a linha do tempo, com anel na cor da superfície. */
+.dot {
+  position: absolute;
+  top: 6px;
+  left: calc(-1 * var(--space-4) - 5px);
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--color-border-strong);
+}
+
+.item[data-type="status_changed"] .dot {
+  background: var(--color-primary);
+}
+
+.description {
+  font-size: var(--font-size-sm);
+}
+
+.note {
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
