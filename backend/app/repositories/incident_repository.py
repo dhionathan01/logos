@@ -4,6 +4,7 @@ from typing import Any, cast
 from sqlalchemy import ColumnElement, CursorResult, Result, case, delete, func, or_, select, update
 from sqlalchemy.orm import Session
 
+from app.domain.chat import TRANSFERABLE_STATUSES
 from app.domain.incident import SEVERITY_RANK, STATUS_RANK, Severity, Status
 from app.models import Incident
 from app.schemas.incident import IncidentFilters
@@ -56,6 +57,33 @@ class IncidentRepository:
             update(Incident)
             .where(Incident.id == incident_id, Incident.version == expected_version)
             .values(**values, version=Incident.version + 1, updated_at=func.now())
+            .execution_options(synchronize_session=False)
+        )
+        return _affected_rows(result) == 1
+
+    def transfer_assignee(
+        self,
+        incident_id: uuid.UUID,
+        from_user: uuid.UUID,
+        to_user: uuid.UUID,
+        expected_version: int | None = None,
+    ) -> bool:
+        """Passa o incidente de um analista para outro, de forma atômica (ADR-0015).
+
+        Só transfere se `from_user` ainda for o responsável e o incidente ainda estiver
+        em investigação ou inconclusivo: se algo mudou no meio tempo, nada é alterado.
+        """
+        conditions = [
+            Incident.id == incident_id,
+            Incident.assignee_id == from_user,
+            Incident.status.in_(TRANSFERABLE_STATUSES),
+        ]
+        if expected_version is not None:
+            conditions.append(Incident.version == expected_version)
+        result = self._session.execute(
+            update(Incident)
+            .where(*conditions)
+            .values(assignee_id=to_user, version=Incident.version + 1, updated_at=func.now())
             .execution_options(synchronize_session=False)
         )
         return _affected_rows(result) == 1

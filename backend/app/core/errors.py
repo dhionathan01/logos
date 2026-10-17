@@ -57,6 +57,18 @@ class IncidentNotEditableError(DomainError):
     title = "O incidente não pode ser alterado no status atual"
 
 
+class HandoverNotAllowedError(DomainError):
+    status_code = status.HTTP_409_CONFLICT
+    problem_type = "/problems/handover-not-allowed"
+    title = "Passagem do incidente não permitida"
+
+
+class DuplicateHandoverError(DomainError):
+    status_code = status.HTTP_409_CONFLICT
+    problem_type = "/problems/handover-already-pending"
+    title = "Já existe um pedido pendente para este incidente"
+
+
 class DuplicateIncidentError(DomainError):
     status_code = status.HTTP_409_CONFLICT
     problem_type = "/problems/duplicate-idempotency-key"
