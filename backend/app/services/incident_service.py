@@ -1,8 +1,10 @@
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any
 
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -17,13 +19,15 @@ from app.core.errors import (
 )
 from app.core.security import AuthenticatedUser
 from app.domain.incident import (
+    EventType,
     Status,
     can_transition,
     default_severity_for,
     is_restricted_to_assignee,
     requires_assignee,
 )
-from app.models import Incident
+from app.models import Incident, IncidentEvent
+from app.repositories.event_repository import EventRepository
 from app.repositories.incident_repository import IncidentRepository
 from app.schemas.incident import (
     IncidentCreate,
@@ -47,6 +51,7 @@ class IncidentService:
     def __init__(self, session: Session) -> None:
         self._session = session
         self._incidents = IncidentRepository(session)
+        self._events = EventRepository(session)
 
     @retry_transient_db_errors
     def list_incidents(self, filters: IncidentFilters) -> tuple[list[Incident], int]:
@@ -67,8 +72,17 @@ class IncidentService:
             return self._require(incident_id)
 
     @retry_transient_db_errors
+    def list_events(self, incident_id: uuid.UUID) -> list[IncidentEvent]:
+        with self._session.begin():
+            self._require(incident_id)
+            return self._events.list_for_incident(incident_id)
+
+    @retry_transient_db_errors
     def create_incident(
-        self, data: IncidentCreate, idempotency_key: str | None = None
+        self,
+        data: IncidentCreate,
+        idempotency_key: str | None = None,
+        reporter: AuthenticatedUser | None = None,
     ) -> CreationResult:
         """Registra um incidente. Reenvios com a mesma Idempotency-Key não duplicam."""
         if idempotency_key:
@@ -91,6 +105,12 @@ class IncidentService:
         try:
             with self._session.begin():
                 self._incidents.add(incident)
+                self._events.record(
+                    incident.id,
+                    EventType.CREATED,
+                    reporter.id if reporter else None,
+                    to_status=Status.OPEN,
+                )
         except IntegrityError:
             # Dois reenvios simultâneos com a mesma chave: o segundo perde a corrida
             # no índice único e devolve o registro que o primeiro criou.
@@ -113,7 +133,15 @@ class IncidentService:
             if incident.status == Status.CLOSED:
                 raise IncidentNotEditableError("Incidentes fechados não podem ser editados.")
             self._ensure_actor_may_change(incident, actor)
-            return self._apply(incident, data.version, data.changes())
+            changes = data.changes()
+            diff = {
+                field: {"from": _plain(getattr(incident, field)), "to": _plain(value)}
+                for field, value in changes.items()
+                if getattr(incident, field) != value
+            }
+            updated = self._apply(incident, data.version, changes)
+            self._events.record(incident.id, EventType.DETAILS_UPDATED, actor.id, changes=diff)
+            return updated
 
     @retry_transient_db_errors
     def change_status(
@@ -121,6 +149,7 @@ class IncidentService:
     ) -> Incident:
         with self._session.begin():
             incident = self._require(incident_id)
+            incident_status_before = incident.status
             self._ensure_version(incident, change.version)
             if not can_transition(incident.status, change.status):
                 raise InvalidTransitionError(
@@ -133,11 +162,27 @@ class IncidentService:
             values: dict[str, Any] = {"status": change.status}
             if requires_assignee(change.status):
                 values["assignee_id"] = actor.id
+                # Tempo de resposta conta a partir da primeira vez que alguém assumiu.
+                values["first_claimed_at"] = func.coalesce(Incident.first_claimed_at, func.now())
             elif change.status == Status.OPEN:
                 values["assignee_id"] = None
+            if change.status == Status.CLOSED:
+                values["closed_at"] = func.now()
             if change.resolution_note is not None:
                 values["resolution_note"] = change.resolution_note
-            return self._apply(incident, change.version, values)
+
+            updated = self._apply(incident, change.version, values)
+            self._events.record(
+                incident.id,
+                EventType.STATUS_CHANGED,
+                actor.id,
+                from_status=incident_status_before,
+                to_status=change.status,
+                changes={"resolution_note": change.resolution_note}
+                if change.resolution_note
+                else None,
+            )
+            return updated
 
     @retry_transient_db_errors
     def delete_incident(self, incident_id: uuid.UUID, version: int) -> None:
@@ -194,6 +239,11 @@ class IncidentService:
                 "Esta Idempotency-Key já foi usada para registrar outro incidente."
             )
         return CreationResult(incident=existing, created=False)
+
+
+def _plain(value: object) -> object:
+    """Valor serializável em JSON para o diff da auditoria (enums viram texto)."""
+    return value.value if isinstance(value, StrEnum) else value
 
 
 def _serialize(incident: Incident) -> dict[str, Any]:
