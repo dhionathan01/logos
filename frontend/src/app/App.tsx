@@ -7,6 +7,7 @@ import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
 import { LoginPage } from "../features/auth/LoginPage";
 import { RequireAuth } from "../features/auth/RequireAuth";
 import { IncidentBoard } from "../features/incidents/IncidentBoard";
+import { WorkspacePage } from "../features/workspace/WorkspacePage";
 import { useTheme } from "../shared/hooks/useTheme";
 import { AppShell } from "./AppShell";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -35,6 +36,7 @@ export function App() {
               }
             >
               <Route index element={<IncidentBoard />} />
+              <Route path="meu-ambiente" element={<WorkspacePage />} />
               <Route path="painel" element={<AnalyticsPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

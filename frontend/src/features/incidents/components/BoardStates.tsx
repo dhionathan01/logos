@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle2, RefreshCw, SearchX } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { Button } from "../../../shared/components/Button";
 import { formatTime } from "../time";
@@ -63,6 +64,25 @@ export function EmptyState({
       <CheckCircle2 size={32} className={styles.successIcon} aria-hidden="true" />
       <h2>Nenhum incidente ativo</h2>
       <p>A operação está em dia. Novos incidentes aparecem aqui automaticamente.</p>
+    </div>
+  );
+}
+
+/** Estado vazio com texto próprio da tela (ícone, título, explicação e uma ação opcional). */
+export function MessageState({
+  icon,
+  title,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={styles.state}>
+      {icon}
+      <h2>{title}</h2>
+      {children}
     </div>
   );
 }

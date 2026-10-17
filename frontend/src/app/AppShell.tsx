@@ -1,4 +1,4 @@
-import { BarChart3, ListChecks, LogOut, Menu, WifiOff, X } from "lucide-react";
+import { BarChart3, ListChecks, LogOut, Menu, UserRound, WifiOff, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -14,6 +14,7 @@ import styles from "./AppShell.module.css";
 
 const NAVIGATION = [
   { to: "/", label: "Fila de incidentes", icon: ListChecks },
+  { to: "/meu-ambiente", label: "Meu ambiente", icon: UserRound },
   { to: "/painel", label: "Painel analítico", icon: BarChart3 },
 ];
 
