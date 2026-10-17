@@ -44,6 +44,18 @@ describe("describeEvent", () => {
     expect(describeEvent(edited)).toBe("Ana Souza alterou a criticidade de Baixa para Alta");
   });
 
+  it.each([
+    ["handover", "Ana Souza aceitou o pedido e passou o incidente para Bruno Lima"],
+    ["delegation", "Ana Souza passou o incidente para Bruno Lima"],
+  ])("descreve a passagem por %s", (via, expected) => {
+    const transferred = event({
+      event_type: "assignee_changed",
+      changes: { assignee: { from: "Ana Souza", to: "Bruno Lima" }, via },
+    });
+
+    expect(describeEvent(transferred)).toBe(expected);
+  });
+
   it("extrai a nota de resolução quando houver", () => {
     expect(resolutionNoteOf(event({ changes: { resolution_note: "Pneu trocado" } }))).toBe(
       "Pneu trocado",

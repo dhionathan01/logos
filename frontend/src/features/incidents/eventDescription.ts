@@ -36,6 +36,14 @@ export function describeEvent(event: IncidentEvent): string {
     return `${actor ?? "Sistema"} ${statusAction(event.from_status, event.to_status)}`;
   }
 
+  if (event.event_type === "assignee_changed") {
+    // Passagem (ADR-0015): quem registra é quem entregou; `via` diz se foi pedido ou delegação.
+    const to = (event.changes?.assignee as { to?: string } | undefined)?.to ?? "outro analista";
+    return event.changes?.via === "handover"
+      ? `${actor ?? "Sistema"} aceitou o pedido e passou o incidente para ${to}`
+      : `${actor ?? "Sistema"} passou o incidente para ${to}`;
+  }
+
   const changes = Object.entries(event.changes ?? {}).map(([field, change]) => {
     const { from, to } = change as { from: unknown; to: unknown };
     const label = FIELD_LABEL[field] ?? field;
