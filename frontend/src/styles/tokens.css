@@ -112,6 +112,23 @@
   --status-inconclusive: var(--brand-brown-900);
   --status-closed: var(--brand-green-600);
 
+  /* Gráficos — validados com o validador de paleta (CVD, contraste, faixa de luminosidade). */
+  --chart-reported: var(--brand-navy-700);
+  --chart-resolved: var(--brand-green-600);
+  --chart-grid: color-mix(in srgb, var(--brand-navy-900) 10%, transparent);
+  --chart-meter-track: color-mix(in srgb, var(--brand-navy-700) 14%, var(--brand-white));
+  --chart-heat-1: #93b6cf;
+  --chart-heat-2: #6a99bc;
+  --chart-heat-3: #4380aa;
+  --chart-heat-4: #226a97;
+  --chart-heat-5: var(--brand-navy-700);
+  /* Texto sobre cada degrau, escolhido pela luminosidade do fundo. */
+  --chart-heat-1-ink: var(--brand-ink);
+  --chart-heat-2-ink: var(--brand-ink);
+  --chart-heat-3-ink: var(--brand-white);
+  --chart-heat-4-ink: var(--brand-white);
+  --chart-heat-5-ink: var(--brand-white);
+
   --shadow-card: 0 1px 2px color-mix(in srgb, var(--brand-navy-900) 8%, transparent);
   --shadow-overlay: 0 12px 40px color-mix(in srgb, var(--brand-navy-900) 24%, transparent);
   --color-backdrop: color-mix(in srgb, var(--brand-navy-900) 45%, transparent);
@@ -158,6 +175,21 @@
   --status-investigating: var(--brand-blue-200);
   --status-inconclusive: var(--brand-amber-300);
   --status-closed: var(--brand-green-400);
+
+  --chart-reported: #1a95d8;
+  --chart-resolved: #3f9d5a;
+  --chart-grid: color-mix(in srgb, var(--brand-white) 10%, transparent);
+  --chart-meter-track: color-mix(in srgb, var(--brand-blue-400) 18%, var(--brand-navy-900));
+  --chart-heat-1: #245a7c;
+  --chart-heat-2: #25719c;
+  --chart-heat-3: #1f8ac0;
+  --chart-heat-4: #2aa6e2;
+  --chart-heat-5: #7cc9f0;
+  --chart-heat-1-ink: var(--brand-white);
+  --chart-heat-2-ink: var(--brand-white);
+  --chart-heat-3-ink: var(--brand-navy-900);
+  --chart-heat-4-ink: var(--brand-navy-900);
+  --chart-heat-5-ink: var(--brand-navy-900);
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-overlay: 0 12px 40px rgb(0 0 0 / 0.5);
