@@ -1,0 +1,54 @@
+# Produção na VPS (1 GB de RAM). Só a porta do web é exposta, e apenas em 127.0.0.1:
+# o nginx do host termina o TLS e faz proxy para cá (ver infra/nginx/logos.conf).
+name: logos
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: logos
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina no .env}
+      POSTGRES_DB: logos
+    # Ajuste para pouca memória: o padrão do Postgres assume uma máquina bem maior.
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c effective_cache_size=192MB
+      -c work_mem=2MB
+      -c maintenance_work_mem=32MB
+      -c max_connections=30
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logos"]
+      interval: 5s
+      retries: 20
+    mem_limit: 256m
+
+  api:
+    image: ghcr.io/${GITHUB_REPOSITORY:?defina no .env}/api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      LOGOS_ENVIRONMENT: production
+      LOGOS_DATABASE_URL: postgresql+psycopg://logos:${POSTGRES_PASSWORD}@db:5432/logos
+      LOGOS_JWT_SECRET: ${LOGOS_JWT_SECRET:?defina no .env}
+      LOGOS_INGESTION_API_KEY: ${LOGOS_INGESTION_API_KEY:?defina no .env}
+      LOGOS_SEED_DEMO_DATA: "true"
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 256m
+
+  web:
+    image: ghcr.io/${GITHUB_REPOSITORY}/web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+    depends_on:
+      - api
+    mem_limit: 64m
+
+volumes:
+  db-data:
