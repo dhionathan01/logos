@@ -95,6 +95,39 @@ def test_list_filters_by_severity_and_category(
     assert body["items"][0]["severity"] == "high"
 
 
+def test_list_filters_by_reported_period(client: TestClient, auth_headers, create_incident) -> None:
+    now = datetime.now(UTC)
+    create_incident(title="Há três dias", reported_at=(now - timedelta(days=3)).isoformat())
+    an_hour_ago = (now - timedelta(hours=1)).isoformat()
+    recent = create_incident(title="Há uma hora", reported_at=an_hour_ago)
+    create_incident(title="Agora", reported_at=now.isoformat())
+
+    response = client.get(
+        "/api/incidents",
+        params={
+            "reported_from": (now - timedelta(hours=2)).isoformat(),
+            "reported_to": (now - timedelta(minutes=30)).isoformat(),
+        },
+        headers=auth_headers("ana"),
+    )
+
+    assert [item["id"] for item in response.json()["items"]] == [recent["id"]]
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"reported_from": "2026-10-16T12:00:00Z", "reported_to": "2026-10-15T12:00:00Z"},
+        {"reported_from": "2026-10-16T12:00:00"},
+        {"reported_to": "ontem"},
+    ],
+)
+def test_list_rejects_invalid_periods(client: TestClient, auth_headers, params: dict) -> None:
+    response = client.get("/api/incidents", params=params, headers=auth_headers("ana"))
+
+    assert response.status_code == 422
+
+
 def test_search_treats_wildcards_literally(
     client: TestClient, auth_headers, create_incident
 ) -> None:
