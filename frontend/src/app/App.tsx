@@ -1,8 +1,9 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 
+import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
 import { LoginPage } from "../features/auth/LoginPage";
 import { RequireAuth } from "../features/auth/RequireAuth";
 import { IncidentBoard } from "../features/incidents/IncidentBoard";
@@ -22,15 +23,17 @@ export function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route
-              path="/"
               element={
                 <RequireAuth>
                   <AppShell>
-                    <IncidentBoard />
+                    <Outlet />
                   </AppShell>
                 </RequireAuth>
               }
-            />
+            >
+              <Route index element={<IncidentBoard />} />
+              <Route path="painel" element={<AnalyticsPage />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

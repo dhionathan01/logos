@@ -21,6 +21,46 @@
   padding: 0 var(--space-6);
 }
 
+.brandAndNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: 100%;
+}
+
+.nav {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-1);
+  height: 100%;
+}
+
+/* Item ativo marcado por um sublinhado na base do header, além do peso do texto. */
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  border-bottom: 2px solid transparent;
+  color: color-mix(in srgb, var(--color-on-header) 72%, transparent);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition:
+    color var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard);
+}
+
+.navLink:hover {
+  color: var(--color-on-header);
+}
+
+.navLinkActive {
+  border-bottom-color: var(--brand-amber-500);
+  color: var(--color-on-header);
+  font-weight: var(--font-weight-semibold);
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -76,6 +116,25 @@
 
   .userName,
   .logoutLabel {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .brandAndNav {
+    gap: var(--space-3);
+  }
+
+  /* No mobile o menu vira só ícones; o rótulo continua acessível via aria-label do link. */
+  .navLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .user {
     display: none;
   }
 }

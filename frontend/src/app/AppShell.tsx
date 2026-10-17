@@ -1,5 +1,6 @@
-import { LogOut, WifiOff } from "lucide-react";
+import { BarChart3, ListChecks, LogOut, WifiOff } from "lucide-react";
 import type { ReactNode } from "react";
+import { NavLink } from "react-router-dom";
 
 import { useSession } from "../features/auth/useSession";
 import { Button } from "../shared/components/Button";
@@ -7,6 +8,11 @@ import { Logo } from "../shared/components/Logo";
 import { ThemeToggle } from "../shared/components/ThemeToggle";
 import { useOnlineStatus } from "../shared/hooks/useOnlineStatus";
 import styles from "./AppShell.module.css";
+
+const NAVIGATION = [
+  { to: "/", label: "Fila de incidentes", icon: ListChecks },
+  { to: "/painel", label: "Painel analítico", icon: BarChart3 },
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useSession();
@@ -16,7 +22,25 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Logo />
+          <div className={styles.brandAndNav}>
+            <Logo />
+            <nav className={styles.nav} aria-label="Principal">
+              {NAVIGATION.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end
+                  viewTransition
+                  className={({ isActive }) =>
+                    `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`
+                  }
+                >
+                  <Icon size={16} aria-hidden="true" />
+                  <span className={styles.navLabel}>{label}</span>
+                </NavLink>
+              ))}
+            </nav>
+          </div>
           <div className={styles.actions}>
             {user && (
               <span className={styles.user}>
