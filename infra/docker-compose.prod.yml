@@ -43,6 +43,8 @@ services:
       LOGOS_JWT_SECRET: ${LOGOS_JWT_SECRET:?defina no .env}
       LOGOS_INGESTION_API_KEY: ${LOGOS_INGESTION_API_KEY:?defina no .env}
       LOGOS_SEED_DEMO_DATA: "true"
+      # O deploy.sh prepara o banco antes da troca e então sobe com "true" (ver o script).
+      LOGOS_SKIP_PREPARE: ${LOGOS_SKIP_PREPARE:-false}
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]
     depends_on:
       db:

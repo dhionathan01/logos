@@ -31,6 +31,15 @@ RESET_JOB="0 7 * * * cd ${APP_DIR} && docker compose --env-file .env -f docker-c
 echo "==> Deploy ${PREVIOUS_TAG} → ${NEW_TAG}"
 set_tag "$NEW_TAG"
 compose pull --quiet
+
+# Migrações e seed rodam num container avulso da versão nova enquanto a antiga ainda atende.
+# Assim a troca em si só espera o servidor subir, não o preparo do banco.
+if ! compose run --rm api true; then
+  echo "!!  Falha ao preparar o banco para ${NEW_TAG}; mantendo ${PREVIOUS_TAG} no ar" >&2
+  set_tag "$PREVIOUS_TAG"
+  exit 1
+fi
+export LOGOS_SKIP_PREPARE=true
 compose up -d --remove-orphans
 
 if wait_until_healthy; then
