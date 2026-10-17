@@ -1,0 +1,172 @@
+/* min-width: 0 impede que o SVG inicial alargue o grid antes de o ResizeObserver medir. */
+.chart {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Legenda espelha a marca: traço curto para linhas. */
+.legendKey {
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.canvas {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.canvas svg {
+  display: block;
+  overflow: visible;
+}
+
+.canvas svg:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.yTick,
+.xTick,
+.endLabel {
+  fill: var(--color-text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.yTick {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.xTick {
+  text-anchor: middle;
+}
+
+.endLabel {
+  dominant-baseline: middle;
+  fill: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Anel na cor da superfície: o ponto continua legível sobre a outra linha. */
+.marker {
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+.crosshair {
+  stroke: var(--color-border-strong);
+  stroke-width: 1;
+}
+
+.hitArea {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.tooltip {
+  position: absolute;
+  min-width: 150px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+  font-size: var(--font-size-sm);
+  pointer-events: none;
+}
+
+.tooltipTitle {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+/* Só a primeira letra: "Seg., 05 de out.", não "Seg., 05 De Out.". */
+.tooltipTitle::first-letter,
+.table th[scope="row"]::first-letter {
+  text-transform: uppercase;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tooltipRow span:last-child {
+  color: var(--color-text-muted);
+}
+
+.tooltipKey {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.empty {
+  padding: var(--space-8) 0;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.table summary {
+  width: fit-content;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.table table {
+  width: 100%;
+  margin-top: var(--space-2);
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  text-align: right;
+}
+
+.table th[scope="row"],
+.table th:first-child {
+  text-align: left;
+  font-weight: var(--font-weight-regular);
+}
