@@ -31,21 +31,38 @@ export const SEVERITY_META: Record<Severity, { label: string; icon: LucideIcon }
 
 export const CATEGORY_META: Record<
   Category,
-  { label: string; icon: LucideIcon; defaultSeverity: Severity }
+  { label: string; shortLabel: string; icon: LucideIcon; defaultSeverity: Severity }
 > = {
   accident_with_victims: {
     label: "Acidente com vítimas",
+    shortLabel: "Vítimas",
     icon: Ambulance,
     defaultSeverity: "high",
   },
-  vehicle_accident: { label: "Acidente com veículo", icon: CarFront, defaultSeverity: "high" },
-  road_block: { label: "Bloqueio de pista", icon: Construction, defaultSeverity: "medium" },
+  vehicle_accident: {
+    label: "Acidente com veículo",
+    shortLabel: "Veículo",
+    icon: CarFront,
+    defaultSeverity: "high",
+  },
+  road_block: {
+    label: "Bloqueio de pista",
+    shortLabel: "Bloqueio",
+    icon: Construction,
+    defaultSeverity: "medium",
+  },
   adverse_weather: {
     label: "Condição climática atípica",
+    shortLabel: "Clima",
     icon: CloudLightning,
     defaultSeverity: "medium",
   },
-  mechanical_failure: { label: "Problema mecânico", icon: Wrench, defaultSeverity: "low" },
+  mechanical_failure: {
+    label: "Problema mecânico",
+    shortLabel: "Mecânico",
+    icon: Wrench,
+    defaultSeverity: "low",
+  },
 };
 
 export const STATUS_LABEL: Record<IncidentStatus, string> = {
