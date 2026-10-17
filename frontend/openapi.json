@@ -184,6 +184,44 @@
             }
           },
           {
+            "name": "reported_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Ocorridos a partir deste instante (ISO 8601 com fuso).",
+              "title": "Reported From"
+            },
+            "description": "Ocorridos a partir deste instante (ISO 8601 com fuso)."
+          },
+          {
+            "name": "reported_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Ocorridos até este instante (ISO 8601 com fuso).",
+              "title": "Reported To"
+            },
+            "description": "Ocorridos até este instante (ISO 8601 com fuso)."
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,

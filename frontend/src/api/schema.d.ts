@@ -449,6 +449,10 @@ export interface operations {
                 category?: components["schemas"]["Category"][];
                 status?: components["schemas"]["Status"][];
                 search?: string;
+                /** @description Ocorridos a partir deste instante (ISO 8601 com fuso). */
+                reported_from?: string | null;
+                /** @description Ocorridos até este instante (ISO 8601 com fuso). */
+                reported_to?: string | null;
                 limit?: number;
                 offset?: number;
             };
