@@ -1,0 +1,66 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    paths: ["frontend/**", "backend/app/**", ".github/workflows/frontend-ci.yml"]
+  push:
+    branches: [main]
+    paths: ["frontend/**", "backend/app/**", ".github/workflows/frontend-ci.yml"]
+  workflow_call:
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Contrato, lint, tipos, testes e build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependências
+        run: |
+          pip install -e ./backend
+          npm ci --prefix frontend
+
+      # Se a API mudou e os tipos do front não foram regenerados, o PR falha aqui.
+      - name: Contrato OpenAPI sincronizado
+        run: |
+          cd backend && python -m app.scripts.export_openapi ../frontend/openapi.json && cd ..
+          npm run gen:api --prefix frontend
+          git diff --exit-code -- frontend/openapi.json frontend/src/api/schema.d.ts
+
+      - name: Lint e formatação
+        working-directory: frontend
+        run: |
+          npx oxlint --deny-warnings
+          npm run format:check
+
+      - name: Tipos
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Testes
+        working-directory: frontend
+        run: npx vitest run --coverage
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
