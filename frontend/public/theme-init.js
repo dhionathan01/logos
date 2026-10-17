@@ -4,7 +4,7 @@
   var theme = null;
   try {
     theme = localStorage.getItem("logos.theme");
-  } catch (error) {
+  } catch {
     // Armazenamento bloqueado (modo privado): segue a preferência do sistema.
   }
   if (theme !== "light" && theme !== "dark") {
