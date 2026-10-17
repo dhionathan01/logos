@@ -3,6 +3,10 @@ name: Deploy
 on:
   push:
     branches: [main]
+    # Mudança só de documentação não troca a versão no ar (cada troca tem alguns segundos fora).
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   workflow_dispatch:
 
 concurrency:
