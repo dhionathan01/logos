@@ -239,6 +239,11 @@ class _Generator:
             location=self._rng.choice(LOCATIONS),
             assignee_id=assignee.id if assignee else None,
             reported_at=reported_at,
+            # Registrado quando ocorreu e atualizado no último evento, coerente com o histórico.
+            created_at=reported_at,
+            updated_at=max(
+                moment for moment in (reported_at, claimed_at, finished_at) if moment is not None
+            ),
             first_claimed_at=claimed_at,
             closed_at=finished_at if status == Status.CLOSED else None,
             resolution_note="Situação normalizada; veículo seguiu viagem."
