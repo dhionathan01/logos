@@ -18,7 +18,15 @@ export interface IncidentFilters {
   search: string;
   period: PeriodFilter;
   pagination: Pagination;
+  /** IDs dos responsáveis; fechados mantêm quem concluiu. */
+  assignee: string[];
+  /** Fila por prioridade; histórico (Meu ambiente) pelos mais recentes. */
+  sort: IncidentSort;
 }
+
+export type IncidentSort = "priority" | "recent";
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Preferências de exibição: sobrevivem a "limpar filtros". */
 const DISPLAY_PARAMS = ["incident", "size", "all"];
@@ -41,6 +49,11 @@ export function parseFilters(params: URLSearchParams): IncidentFilters {
     search: (params.get("q") ?? "").slice(0, 100),
     period: parsePeriod(params),
     pagination: parsePagination(params),
+    assignee: params
+      .getAll("assignee")
+      .filter((id) => UUID_PATTERN.test(id))
+      .slice(0, 1),
+    sort: "priority",
   };
 }
 
@@ -49,7 +62,9 @@ export function toApiQuery(filters: IncidentFilters, now = Date.now()): URLSearc
   filters.severity.forEach((value) => query.append("severity", value));
   filters.category.forEach((value) => query.append("category", value));
   filters.status.forEach((value) => query.append("status", value));
+  filters.assignee.forEach((value) => query.append("assignee", value));
   if (filters.search.trim()) query.set("search", filters.search.trim());
+  if (filters.sort !== "priority") query.set("sort", filters.sort);
   const { reportedFrom, reportedTo } = periodToRange(filters.period, now);
   if (reportedFrom) query.set("reported_from", reportedFrom);
   if (reportedTo) query.set("reported_to", reportedTo);
@@ -71,6 +86,7 @@ export function hasCustomFilters(filters: IncidentFilters): boolean {
   return (
     filters.severity.length > 0 ||
     filters.category.length > 0 ||
+    filters.assignee.length > 0 ||
     !isDefaultStatus(filters.status) ||
     filters.search.trim() !== "" ||
     filters.period.preset !== "all"
@@ -117,6 +133,21 @@ export function useIncidentFilters() {
           const next = withoutPage(current);
           if (search) next.set("q", search);
           else next.delete("q");
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setParams],
+  );
+
+  const setAssignee = useCallback(
+    (assigneeId: string | null) => {
+      setParams(
+        (current) => {
+          const next = withoutPage(current);
+          if (assigneeId) next.set("assignee", assigneeId);
+          else next.delete("assignee");
           return next;
         },
         { replace: true },
@@ -185,5 +216,15 @@ export function useIncidentFilters() {
     [setParams],
   );
 
-  return { filters, toggle, setSearch, setPeriod, clear, setPage, setPageSize, setShowAll };
+  return {
+    filters,
+    toggle,
+    setSearch,
+    setAssignee,
+    setPeriod,
+    clear,
+    setPage,
+    setPageSize,
+    setShowAll,
+  };
 }

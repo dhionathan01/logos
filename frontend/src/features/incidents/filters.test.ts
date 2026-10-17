@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { hasCustomFilters, parseFilters, toApiQuery } from "./filters";
 import { ALL_TIME } from "../../shared/period/period";
 
+const ANA_ID = "3f2a8c1e-5b7d-4e9a-8c6f-1d2e3f4a5b6c";
+
 describe("parseFilters", () => {
   it("mostra só incidentes ativos quando não há filtro de status", () => {
     const filters = parseFilters(new URLSearchParams());
@@ -32,12 +34,22 @@ describe("toApiQuery", () => {
       search: "  BR-116 ",
       period: ALL_TIME,
       pagination: { page: 2, pageSize: 50, showAll: false },
+      assignee: [ANA_ID],
+      sort: "recent",
     });
 
     expect(query.toString()).toBe(
-      "severity=high&severity=medium&category=road_block&status=open&search=BR-116" +
-        "&limit=50&offset=50",
+      "severity=high&severity=medium&category=road_block&status=open" +
+        `&assignee=${ANA_ID}&search=BR-116&sort=recent&limit=50&offset=50`,
     );
+  });
+
+  it("aceita um responsável com id válido e conta como filtro", () => {
+    const filters = parseFilters(new URLSearchParams(`assignee=${ANA_ID}&assignee=ana`));
+
+    expect(filters.assignee).toEqual([ANA_ID]);
+    expect(hasCustomFilters(filters)).toBe(true);
+    expect(parseFilters(new URLSearchParams("assignee=ana")).assignee).toEqual([]);
   });
 
   it("paginação não conta como filtro personalizado", () => {

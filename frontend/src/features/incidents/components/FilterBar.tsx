@@ -6,6 +6,8 @@ import { Button } from "../../../shared/components/Button";
 import { Dropdown, DropdownOption } from "../../../shared/components/Dropdown";
 import { summarizeSelection } from "../../../shared/components/summarizeSelection";
 import { type PeriodFilter, QUEUE_PERIODS } from "../../../shared/period/period";
+import { useSession } from "../../auth/useSession";
+import { useAnalysts } from "../../chat/api";
 import { PeriodPicker } from "../../../shared/period/PeriodPicker";
 import { type IncidentFilters, hasCustomFilters, isDefaultStatus } from "../filters";
 import { CATEGORIES, CATEGORY_META, STATUSES, STATUS_LABEL } from "../labels";
@@ -18,6 +20,7 @@ interface FilterBarProps {
   onToggleCategory: (category: Category) => void;
   onToggleStatus: (status: IncidentStatus) => void;
   onSearch: (search: string) => void;
+  onAssigneeChange: (assigneeId: string | null) => void;
   onPeriodChange: (period: PeriodFilter) => void;
   onClear: () => void;
 }
@@ -27,9 +30,24 @@ export function FilterBar({
   onToggleCategory,
   onToggleStatus,
   onSearch,
+  onAssigneeChange,
   onPeriodChange,
   onClear,
 }: FilterBarProps) {
+  const { user } = useSession();
+  const analysts = useAnalysts();
+  const assigneeName = (id: string) =>
+    id === user?.id
+      ? "Você"
+      : (analysts.data?.find((analyst) => analyst.id === id)?.display_name ?? "Analista");
+  // Você primeiro: é a escolha mais comum.
+  const assigneeOptions = [
+    ...(user ? [{ id: user.id, name: "Você" }] : []),
+    ...(analysts.data ?? [])
+      .filter((analyst) => analyst.id !== user?.id)
+      .map((analyst) => ({ id: analyst.id, name: analyst.display_name })),
+  ];
+  const selectedAssignee = filters.assignee[0];
   const [searchDraft, setSearchDraft] = useState(filters.search);
   const [appliedSearch, setAppliedSearch] = useState(filters.search);
 
@@ -102,6 +120,28 @@ export function FilterBar({
               </DropdownOption>
             );
           })}
+        </Dropdown>
+        <Dropdown
+          label="Responsável"
+          summary={selectedAssignee ? assigneeName(selectedAssignee) : "Qualquer um"}
+          isActive={selectedAssignee !== undefined}
+        >
+          {(close) =>
+            [{ id: "", name: "Qualquer um" }, ...assigneeOptions].map((option) => (
+              <DropdownOption
+                key={option.id || "any"}
+                type="radio"
+                name="assignee"
+                checked={(selectedAssignee ?? "") === option.id}
+                onChange={() => {
+                  onAssigneeChange(option.id || null);
+                  close();
+                }}
+              >
+                {option.name}
+              </DropdownOption>
+            ))
+          }
         </Dropdown>
         <PeriodPicker
           label="Ocorrido em"
