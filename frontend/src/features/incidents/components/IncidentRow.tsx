@@ -27,7 +27,12 @@ export const IncidentRow = memo(function IncidentRow({
   onOpen,
   onClaim,
 }: IncidentRowProps) {
-  const elapsed = elapsedSince(incident.reported_at, now);
+  // Fechado: mostra quanto levou para resolver (fixo), não um tempo que cresce para sempre.
+  const resolvedIn =
+    incident.status === "closed" && incident.closed_at
+      ? elapsedSince(incident.reported_at, Date.parse(incident.closed_at))
+      : null;
+  const elapsed = resolvedIn ?? elapsedSince(incident.reported_at, now);
   const needsAttention =
     incident.severity === "high" &&
     incident.status === "open" &&
@@ -73,7 +78,14 @@ export const IncidentRow = memo(function IncidentRow({
             className={`${styles.elapsed} tabular ${needsAttention ? styles.attention : ""}`}
             title={needsAttention ? "Alta criticidade aberta há mais de 30 minutos" : undefined}
           >
-            <span className="visually-hidden">Aberto há </span>
+            <span className="visually-hidden">
+              {resolvedIn !== null ? "Resolvido em " : "Aberto há "}
+            </span>
+            {resolvedIn !== null && (
+              <span className={styles.resolvedPrefix} aria-hidden="true">
+                resolvido em{" "}
+              </span>
+            )}
             {formatElapsed(elapsed)}
           </span>
           <time dateTime={incident.reported_at} className={`${styles.occurredAt} tabular`}>
