@@ -91,7 +91,13 @@ export function periodToRange(
     };
   }
   const durationMs = PRESET_DURATION_MS[period.preset];
-  return durationMs ? { reportedFrom: new Date(now - durationMs).toISOString() } : {};
+  if (!durationMs) return {};
+  if (durationMs < DAY * 7) return { reportedFrom: new Date(now - durationMs).toISOString() };
+  // "Últimos N dias" são N dias completos (contando hoje), a partir da meia-noite local:
+  // evita um primeiro dia parcial que parece uma queda na série diária.
+  const start = new Date(now - durationMs + DAY);
+  start.setHours(0, 0, 0, 0);
+  return { reportedFrom: start.toISOString() };
 }
 
 export function todayAsInputValue(now = new Date()): string {

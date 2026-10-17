@@ -57,6 +57,16 @@ describe("periodToRange", () => {
     expect(range).toEqual({ reportedFrom: "2026-10-16T09:00:00.000Z" });
   });
 
+  it("atalhos em dias contam dias completos a partir da meia-noite local", () => {
+    const now = new Date(2026, 9, 16, 22, 30).getTime();
+
+    const start = new Date(periodToRange({ preset: "7d", from: "", to: "" }, now).reportedFrom!);
+
+    expect(start.getDate()).toBe(10);
+    expect(start.getHours()).toBe(0);
+    expect(start.getMinutes()).toBe(0);
+  });
+
   it("intervalo personalizado cobre o dia inteiro no fuso do analista", () => {
     const range = periodToRange({ preset: "custom", from: "2026-10-10", to: "2026-10-16" }, NOW);
 
