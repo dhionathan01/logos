@@ -21,7 +21,7 @@ export const PERIOD_LABEL: Record<PeriodPreset, string> = {
   "7d": "7 dias",
   "30d": "30 dias",
   "90d": "90 dias",
-  custom: "Personalizado",
+  custom: "Filtrar por período",
 };
 
 const PRESET_DURATION_MS: Partial<Record<PeriodPreset, number>> = {

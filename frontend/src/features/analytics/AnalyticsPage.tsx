@@ -48,15 +48,17 @@ export function AnalyticsPage() {
             )}
           </p>
         </div>
+        {/* Um único filtro, acima de tudo o que ele afeta: todos os números concordam entre si. */}
+        <div className={styles.period}>
+          <PeriodPicker
+            label="Período"
+            options={DASHBOARD_PERIODS}
+            value={period}
+            defaultPreset={DEFAULT_PERIOD}
+            onChange={changePeriod}
+          />
+        </div>
       </header>
-
-      {/* Um único filtro, acima de tudo o que ele afeta: todos os números concordam entre si. */}
-      <PeriodPicker
-        label="Período"
-        options={DASHBOARD_PERIODS}
-        value={period}
-        onChange={changePeriod}
-      />
 
       {analytics.isError && report && (
         <p className={styles.stale} role="status">

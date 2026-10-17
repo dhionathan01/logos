@@ -3,6 +3,18 @@
   gap: var(--space-5);
 }
 
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.period {
+  min-width: 220px;
+}
+
 .title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
@@ -132,5 +144,9 @@
 @media (max-width: 640px) {
   .panel {
     padding: var(--space-4);
+  }
+
+  .period {
+    width: 100%;
   }
 }

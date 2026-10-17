@@ -100,7 +100,8 @@ describe("AnalyticsPage", () => {
     renderWithProviders(<AnalyticsPage />, { route: "/painel" });
     await screen.findByText("Taxa de resolução");
 
-    await userEvent.click(screen.getByRole("button", { name: "Todo o período" }));
+    await userEvent.click(screen.getByRole("button", { name: /Período/ }));
+    await userEvent.click(screen.getByRole("radio", { name: "Todo o período" }));
 
     await waitFor(() => expect(queries.at(-1)?.has("reported_from")).toBe(false));
     expect(queries[0]?.has("reported_from")).toBe(true);
