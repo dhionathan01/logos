@@ -2,6 +2,13 @@
 # o nginx do host termina o TLS e faz proxy para cá (ver infra/nginx/logos.conf).
 name: logos
 
+# Logs com teto: sob uma enxurrada de requisições, eles não podem encher o disco.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
     image: postgres:16-alpine
@@ -25,6 +32,7 @@ services:
       interval: 5s
       retries: 20
     mem_limit: 256m
+    logging: *logging
 
   api:
     image: ghcr.io/${GITHUB_REPOSITORY:?defina no .env}/api:${IMAGE_TAG:-latest}
@@ -40,6 +48,7 @@ services:
       db:
         condition: service_healthy
     mem_limit: 256m
+    logging: *logging
 
   web:
     image: ghcr.io/${GITHUB_REPOSITORY}/web:${IMAGE_TAG:-latest}
@@ -49,6 +58,7 @@ services:
     depends_on:
       - api
     mem_limit: 64m
+    logging: *logging
 
 volumes:
   db-data:

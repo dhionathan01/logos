@@ -22,6 +22,12 @@ wait_until_healthy() {
   done
 }
 
+# Demonstração pública: todo dia às 07:00 UTC (04:00 em Brasília) o que visitantes criaram
+# some e a base de demonstração é recriada. Instalado aqui para ficar versionado; idempotente.
+RESET_MARK="# logos-demo-reset"
+RESET_JOB="0 7 * * * cd ${APP_DIR} && docker compose --env-file .env -f docker-compose.prod.yml exec -T api python -m app.scripts.seed --reset >> ${APP_DIR}/demo-reset.log 2>&1 ${RESET_MARK}"
+{ crontab -l 2>/dev/null | grep -vF "$RESET_MARK" || true; echo "$RESET_JOB"; } | crontab -
+
 echo "==> Deploy ${PREVIOUS_TAG} → ${NEW_TAG}"
 set_tag "$NEW_TAG"
 compose pull --quiet
