@@ -81,6 +81,8 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   box-shadow: var(--shadow-overlay);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   animation: open var(--duration-fast) var(--easing-standard);
 }
 
@@ -113,16 +115,34 @@
   }
 }
 
-/* Em telas estreitas os filtros dividem a linha: rótulo em cima, valor embaixo. */
+/*
+ * Em telas estreitas os filtros dividem a linha: rótulo em cima, valor embaixo, sem a seta
+ * (que roubaria a largura do texto).
+ */
 @media (max-width: 640px) {
   .trigger {
     height: 48px;
+    padding: 0 var(--space-2) 0 var(--space-3);
   }
 
   .text {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0;
+  }
+
+  .label {
+    overflow: hidden;
+    letter-spacing: 0.03em;
+    text-overflow: ellipsis;
+  }
+
+  .chevron {
+    display: none;
+  }
+
+  .panel {
+    min-width: min(320px, calc(100vw - 2 * var(--space-4)));
   }
 
   .option {

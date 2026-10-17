@@ -1,5 +1,5 @@
 import { CalendarDays } from "lucide-react";
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 
 import { Dropdown, DropdownOption } from "../components/Dropdown";
 import { PERIOD_LABEL, type PeriodFilter, type PeriodPreset, todayAsInputValue } from "./period";
@@ -85,8 +85,15 @@ function CustomRange({
   onChange: (period: PeriodFilter) => void;
 }) {
   const today = todayAsInputValue();
+  const rangeRef = useRef<HTMLDivElement>(null);
+
+  // Em tela baixa o painel rola: ao escolher o intervalo, traz as datas para a vista.
+  useEffect(() => {
+    rangeRef.current?.scrollIntoView?.({ block: "nearest" });
+  }, []);
+
   return (
-    <div className={styles.range}>
+    <div className={styles.range} ref={rangeRef}>
       <label>
         <span>De</span>
         <input

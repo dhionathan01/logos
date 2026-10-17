@@ -5,6 +5,9 @@ import styles from "./Dropdown.module.css";
 
 /** Margem mínima entre o painel aberto e a borda da tela. */
 const VIEWPORT_GUTTER_PX = 16;
+/** Barra do chat (--chat-bar-height) mais uma folga. */
+const BOTTOM_CLEARANCE_PX = 64;
+const MIN_PANEL_HEIGHT_PX = 160;
 
 interface DropdownProps {
   label: string;
@@ -51,12 +54,15 @@ export function Dropdown({ label, summary, isActive = false, children }: Dropdow
     };
   }, [isOpen]);
 
-  // No mobile o botão pode estar perto da borda: desloca o painel para caber na tela.
+  // No mobile o botão pode estar perto da borda: desloca o painel para caber na tela,
+  // e limita a altura ao espaço livre acima da barra fixa do chat (o resto rola).
   useLayoutEffect(() => {
     const panel = panelRef.current;
     if (!isOpen || !panel) return;
     panel.style.translate = "";
     const rect = panel.getBoundingClientRect();
+    const available = window.innerHeight - rect.top - BOTTOM_CLEARANCE_PX;
+    panel.style.maxHeight = `${Math.max(MIN_PANEL_HEIGHT_PX, available)}px`;
     const overflowRight = rect.right - (window.innerWidth - VIEWPORT_GUTTER_PX);
     const overflowLeft = VIEWPORT_GUTTER_PX - rect.left;
     if (overflowRight > 0) panel.style.translate = `${-Math.min(overflowRight, -overflowLeft)}px 0`;
