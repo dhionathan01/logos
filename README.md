@@ -28,7 +28,7 @@ MVP da plataforma que organiza o caos entre **5.000 caminhões em rota** e a cen
 | Pergunta do desafio | Resposta no Logos | Onde ver |
 |---|---|---|
 | **Como apresentar 100 incidentes e o analista priorizar em milissegundos?** | A API já devolve a fila ordenada por **criticidade → status (o que exige ação) → mais antigo**. Cada linha tem faixa lateral colorida, badge com **cor + ícone + texto** (não depende só de cor), tempo aberto em números tabulares e destaque quando um incidente de criticidade alta está aberto há mais de 30 min. No topo, contadores por criticidade que também filtram com um clique. | [ADR-0010](docs/adr/0010-design-tokens-e-design-da-informacao.md) |
-| **Gestão por exceção (filtros)** | Filtros por criticidade, categoria, status e busca textual, **guardados na URL** (compartilháveis, botão voltar funciona). Por padrão, os fechados ficam ocultos: a tela mostra só o que ainda pede ação. | `frontend/src/features/incidents/filters.ts` |
+| **Gestão por exceção (filtros)** | Filtros por criticidade, categoria, status, **período de ocorrência** (última hora, 6 h, 24 h, 7 dias ou intervalo de datas) e busca textual, **guardados na URL** (compartilháveis, botão voltar funciona). Por padrão, os fechados ficam ocultos: a tela mostra só o que ainda pede ação. | `frontend/src/features/incidents/filters.ts` |
 | **Como garantir que dois analistas não resolvam o mesmo problema?** | Duas camadas. **(1) Concorrência otimista:** toda alteração envia a versão lida, e o `UPDATE ... WHERE version = :v` é atômico no PostgreSQL; se alguém gravou antes, a resposta é `409` com o estado atual. **(2) Atribuição:** ao assumir, o incidente passa a ter um responsável, e só ele pode concluí-lo (`403` para os demais). Um teste dispara duas threads simultâneas e verifica que exatamente uma vence. | [ADR-0007](docs/adr/0007-concorrencia-otimista-e-atribuicao.md) |
 | **Como o código trata o estado enquanto o banco processa?** | **Atualização otimista com rollback:** a tela muda na hora e a linha mostra "Salvando…". Se a API confirmar, adota a resposta; se recusar, desfaz e mostra o motivo (e quem está com o incidente); se a rede cair, desfaz e avisa. Sem conexão, a alteração fica "Aguardando conexão" e é enviada quando a rede volta. | [ADR-0009](docs/adr/0009-estado-e-resiliencia-no-frontend.md) |
 | **Resiliência a rede instável e banco lento** | Backend: timeouts curtos, `pool_pre_ping`, retry com backoff exponencial e jitter só em erros transitórios, `503` + `Retry-After` quando o banco não responde, `Idempotency-Key` na ingestão (caminhão que reenvia não duplica). Frontend: retry com backoff, fila antiga continua visível com aviso se a atualização falhar, banner de offline. | [ADR-0008](docs/adr/0008-resiliencia-e-idempotencia.md) |
@@ -186,7 +186,7 @@ Documentação interativa em `/api/docs`. Resumo:
 | Método | Rota | Descrição |
 |---|---|---|
 | `POST` | `/api/auth/login` | Login do analista → JWT |
-| `GET` | `/api/incidents` | Fila priorizada; filtros `severity`, `category`, `status` (repetíveis), `search`, `limit`, `offset` |
+| `GET` | `/api/incidents` | Fila priorizada; filtros `severity`, `category`, `status` (repetíveis), `search`, `reported_from`/`reported_to` (ISO 8601 com fuso), `limit`, `offset` |
 | `GET` | `/api/incidents/summary` | Contadores por criticidade e status |
 | `GET` | `/api/incidents/{id}` | Detalhe |
 | `POST` | `/api/incidents` | Registra incidente (JWT ou `X-API-Key`; aceita `Idempotency-Key`) |
