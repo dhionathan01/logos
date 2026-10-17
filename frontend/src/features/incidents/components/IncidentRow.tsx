@@ -4,7 +4,7 @@ import { memo } from "react";
 import type { Incident } from "../../../api/types";
 import { Button } from "../../../shared/components/Button";
 import { Spinner } from "../../../shared/components/Spinner";
-import { HIGH_SEVERITY_ATTENTION_MS, elapsedSince, formatElapsed } from "../time";
+import { HIGH_SEVERITY_ATTENTION_MS, elapsedSince, formatElapsed, formatOccurrence } from "../time";
 import { CategoryLabel, SeverityBadge, StatusBadge } from "./Badges";
 import styles from "./IncidentRow.module.css";
 
@@ -68,12 +68,18 @@ export const IncidentRow = memo(function IncidentRow({
           </span>
         </span>
 
-        <span
-          className={`${styles.elapsed} tabular ${needsAttention ? styles.attention : ""}`}
-          title={needsAttention ? "Alta criticidade aberta há mais de 30 minutos" : undefined}
-        >
-          <span className="visually-hidden">Aberto há </span>
-          {formatElapsed(elapsed)}
+        <span className={styles.when}>
+          <span
+            className={`${styles.elapsed} tabular ${needsAttention ? styles.attention : ""}`}
+            title={needsAttention ? "Alta criticidade aberta há mais de 30 minutos" : undefined}
+          >
+            <span className="visually-hidden">Aberto há </span>
+            {formatElapsed(elapsed)}
+          </span>
+          <time dateTime={incident.reported_at} className={`${styles.occurredAt} tabular`}>
+            <span className="visually-hidden">Ocorrido </span>
+            {formatOccurrence(incident.reported_at, now)}
+          </time>
         </span>
 
         <span className={styles.state}>
