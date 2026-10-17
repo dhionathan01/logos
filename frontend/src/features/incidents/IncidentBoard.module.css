@@ -46,6 +46,17 @@
   list-style: none;
 }
 
+@media (max-width: 640px) {
+  .heading {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .title {
+    font-size: var(--font-size-lg);
+  }
+}
+
 .truncated {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
