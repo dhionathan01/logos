@@ -1,0 +1,90 @@
+.severity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.high {
+  background: var(--severity-high-bg);
+  color: var(--severity-high-text);
+}
+
+.high svg {
+  color: var(--severity-high);
+}
+
+.medium {
+  background: var(--severity-medium-bg);
+  color: var(--severity-medium-text);
+}
+
+.medium svg {
+  color: var(--severity-medium);
+}
+
+.low {
+  background: var(--severity-low-bg);
+  color: var(--severity-low-text);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status_open {
+  color: var(--status-open);
+}
+
+/* "Aberto" é o único status que pede ação imediata: ponto pulsante chama o olho. */
+.status_open .dot {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 60%, transparent);
+  animation: pulse 2s infinite;
+}
+
+.status_investigating {
+  color: var(--status-investigating);
+}
+
+.status_inconclusive {
+  color: var(--status-inconclusive);
+}
+
+.status_closed {
+  color: var(--status-closed);
+}
+
+.category {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
