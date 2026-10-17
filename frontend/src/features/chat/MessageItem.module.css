@@ -1,0 +1,180 @@
+.time {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+}
+
+/* Mensagens de analistas: balões, os próprios alinhados à direita. */
+.user {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+  max-width: 88%;
+}
+
+.mine {
+  justify-self: end;
+  justify-items: end;
+}
+
+.bubble {
+  padding: var(--space-2) var(--space-3);
+  border-radius: 4px var(--radius-card) var(--radius-card) var(--radius-card);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mine .bubble {
+  border-radius: var(--radius-card) 4px var(--radius-card) var(--radius-card);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* Avisos do sistema: discretos, uma linha, para não competir com a conversa. */
+.system {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.systemIcon {
+  margin-top: 1px;
+}
+
+.system[data-tone="warning"] {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.system[data-tone="danger"] {
+  background: var(--severity-high-bg);
+  color: var(--severity-high-text);
+}
+
+.system[data-tone="success"] .systemIcon {
+  color: var(--color-success);
+}
+
+.systemBody {
+  overflow-wrap: anywhere;
+}
+
+.inlineLink {
+  color: inherit;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Pedido de passagem: cartão com estado e ações. */
+.handover {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+}
+
+.forMe {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+  animation: attention 1.2s var(--easing-standard) 2;
+}
+
+.handoverFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.status {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.status[data-status="pending"] {
+  color: var(--status-investigating);
+}
+
+.status[data-status="accepted"] {
+  color: var(--color-success);
+}
+
+.incident {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  text-decoration: none;
+}
+
+.incident:hover {
+  border-color: var(--color-border-strong);
+}
+
+.severityDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.incident[data-severity="high"] .severityDot {
+  background: var(--severity-high);
+}
+
+.incident[data-severity="medium"] .severityDot {
+  background: var(--severity-medium);
+}
+
+.incident[data-severity="low"] .severityDot {
+  background: var(--severity-low);
+}
+
+.incidentTitle {
+  overflow: hidden;
+  font-weight: var(--font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.incidentVehicle {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+@keyframes attention {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+}
