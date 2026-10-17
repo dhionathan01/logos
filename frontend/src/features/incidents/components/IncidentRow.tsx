@@ -96,7 +96,12 @@ export const IncidentRow = memo(function IncidentRow({
 
       <span className={styles.action}>
         {incident.status === "open" && (
-          <Button size="sm" disabled={isPending} onClick={() => onClaim(incident)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={isPending}
+            onClick={() => onClaim(incident)}
+          >
             Assumir
           </Button>
         )}
