@@ -52,6 +52,14 @@ export function useIncident(id: string | null) {
   });
 }
 
+/** Trilha de auditoria; revalidada junto com o incidente (mesmo prefixo de chave). */
+export function useIncidentEvents(id: string) {
+  return useQuery({
+    queryKey: incidentKeys.events(id),
+    queryFn: ({ signal }) => incidentsApi.events(id, signal),
+  });
+}
+
 interface StatusChangeVariables {
   incident: Incident;
   target: IncidentStatus;

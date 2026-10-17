@@ -4,6 +4,7 @@ type Schemas = components["schemas"];
 
 export type Incident = Schemas["IncidentRead"];
 export type IncidentPage = Schemas["IncidentPage"];
+export type IncidentEvent = Schemas["IncidentEventRead"];
 export type IncidentSummary = Schemas["IncidentSummary"];
 export type IncidentCreate = Schemas["IncidentCreate"];
 export type IncidentUpdate = Schemas["IncidentUpdate"];

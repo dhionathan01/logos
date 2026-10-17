@@ -2,6 +2,7 @@ import { request } from "../../api/httpClient";
 import type {
   Incident,
   IncidentCreate,
+  IncidentEvent,
   IncidentPage,
   IncidentSummary,
   IncidentUpdate,
@@ -16,6 +17,7 @@ export const incidentKeys = {
   list: (filters: IncidentFilters) => [...incidentKeys.lists(), filters] as const,
   details: () => [...incidentKeys.all, "detail"] as const,
   detail: (id: string) => [...incidentKeys.details(), id] as const,
+  events: (id: string) => [...incidentKeys.detail(id), "events"] as const,
   summary: () => [...incidentKeys.all, "summary"] as const,
 };
 
@@ -24,6 +26,9 @@ export const incidentsApi = {
     request<IncidentPage>("/incidents", { query: toApiQuery(filters), signal }),
 
   get: (id: string, signal?: AbortSignal) => request<Incident>(`/incidents/${id}`, { signal }),
+
+  events: (id: string, signal?: AbortSignal) =>
+    request<IncidentEvent[]>(`/incidents/${id}/events`, { signal }),
 
   summary: (signal?: AbortSignal) => request<IncidentSummary>("/incidents/summary", { signal }),
 
