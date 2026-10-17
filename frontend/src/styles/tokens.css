@@ -1,0 +1,165 @@
+/*
+ * Design tokens do Logos — fonte única de verdade de cores, tipografia e forma.
+ * Paleta de marca extraída da landing page da AutoU (ver ADR-0010).
+ *
+ * Camadas:
+ *   1. --brand-*  valores brutos da identidade visual (não usar direto nos componentes)
+ *   2. tokens semânticos (--color-*, --severity-*, --status-*), redefinidos por tema
+ */
+
+:root {
+  /* 1. Marca AutoU */
+  --brand-navy-900: #031a2b;
+  --brand-navy-800: #071a28;
+  --brand-navy-700: #02578a;
+  --brand-blue-500: #05a2f2;
+  --brand-blue-400: #21b4ff;
+  --brand-blue-200: #88d7ff;
+  --brand-orange-500: #ec4e22;
+  --brand-orange-600: #d55b1b;
+  --brand-amber-500: #fd9800;
+  --brand-amber-300: #ffb648;
+  --brand-brown-900: #430d00;
+  --brand-red-500: #e54d42;
+  --brand-red-700: #b82e24;
+  --brand-green-400: #68cd86;
+  --brand-green-600: #42a85f;
+  --brand-ink: #101010;
+  --brand-white: #ffffff;
+
+  /* Tipografia */
+  --font-sans: "Figtree Variable", "Figtree", system-ui, -apple-system, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.9375rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+
+  /* Espaçamento (base 4px) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Forma (raios da landing; o de card foi reduzido para a densidade do painel) */
+  --radius-sm: 8px;
+  --radius-button: 12px;
+  --radius-card: 16px;
+  --radius-pill: 999px;
+
+  /* Movimento */
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --container-width: 1280px;
+  --header-height: 64px;
+}
+
+/* 2. Tema claro (padrão) */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-bg: color-mix(in srgb, var(--brand-navy-900) 4%, var(--brand-white));
+  --color-surface: var(--brand-white);
+  --color-surface-hover: color-mix(in srgb, var(--brand-navy-700) 5%, var(--brand-white));
+  --color-surface-sunken: color-mix(in srgb, var(--brand-navy-900) 6%, var(--brand-white));
+  --color-border: color-mix(in srgb, var(--brand-navy-900) 12%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--brand-navy-900) 24%, transparent);
+  --color-text: var(--brand-ink);
+  --color-text-muted: color-mix(in srgb, var(--brand-ink) 64%, transparent);
+  --color-text-inverse: var(--brand-white);
+
+  --color-primary: var(--brand-navy-700);
+  --color-primary-hover: var(--brand-navy-900);
+  --color-on-primary: var(--brand-white);
+  --color-accent: var(--brand-orange-500);
+  --color-focus: var(--brand-blue-500);
+  --color-header: var(--brand-navy-900);
+  --color-on-header: var(--brand-white);
+
+  --color-danger: var(--brand-red-700);
+  --color-success: var(--brand-green-600);
+  --color-warning-bg: color-mix(in srgb, var(--brand-amber-500) 16%, var(--brand-white));
+  --color-warning-text: var(--brand-brown-900);
+
+  /* Criticidade: cor + ícone + texto, nunca só cor */
+  --severity-high: var(--brand-red-500);
+  --severity-high-text: var(--brand-red-700);
+  --severity-high-bg: color-mix(in srgb, var(--brand-red-500) 12%, var(--brand-white));
+  --severity-medium: var(--brand-amber-500);
+  --severity-medium-text: var(--brand-brown-900);
+  --severity-medium-bg: color-mix(in srgb, var(--brand-amber-500) 16%, var(--brand-white));
+  --severity-low: var(--brand-blue-500);
+  --severity-low-text: var(--brand-navy-700);
+  --severity-low-bg: color-mix(in srgb, var(--brand-blue-500) 12%, var(--brand-white));
+
+  --status-open: var(--brand-ink);
+  --status-investigating: var(--brand-navy-700);
+  --status-inconclusive: var(--brand-brown-900);
+  --status-closed: var(--brand-green-600);
+
+  --shadow-card: 0 1px 2px color-mix(in srgb, var(--brand-navy-900) 8%, transparent);
+  --shadow-overlay: 0 12px 40px color-mix(in srgb, var(--brand-navy-900) 24%, transparent);
+  --color-backdrop: color-mix(in srgb, var(--brand-navy-900) 45%, transparent);
+}
+
+/* Tema escuro: navy da marca como base, cores claras para manter contraste AA */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: var(--brand-navy-900);
+  --color-surface: color-mix(in srgb, var(--brand-navy-700) 16%, var(--brand-navy-900));
+  --color-surface-hover: color-mix(in srgb, var(--brand-navy-700) 26%, var(--brand-navy-900));
+  --color-surface-sunken: var(--brand-navy-800);
+  --color-border: color-mix(in srgb, var(--brand-white) 10%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--brand-white) 22%, transparent);
+  --color-text: var(--brand-white);
+  --color-text-muted: color-mix(in srgb, var(--brand-white) 68%, transparent);
+  --color-text-inverse: var(--brand-navy-900);
+
+  --color-primary: var(--brand-blue-400);
+  --color-primary-hover: var(--brand-blue-200);
+  --color-on-primary: var(--brand-navy-900);
+  --color-accent: var(--brand-orange-500);
+  --color-focus: var(--brand-blue-200);
+  --color-header: var(--brand-navy-800);
+  --color-on-header: var(--brand-white);
+
+  --color-danger: color-mix(in srgb, var(--brand-red-500) 70%, var(--brand-white));
+  --color-success: var(--brand-green-400);
+  --color-warning-bg: color-mix(in srgb, var(--brand-amber-500) 18%, var(--brand-navy-900));
+  --color-warning-text: var(--brand-amber-300);
+
+  --severity-high: var(--brand-red-500);
+  --severity-high-text: color-mix(in srgb, var(--brand-red-500) 60%, var(--brand-white));
+  --severity-high-bg: color-mix(in srgb, var(--brand-red-500) 20%, var(--brand-navy-900));
+  --severity-medium: var(--brand-amber-500);
+  --severity-medium-text: var(--brand-amber-300);
+  --severity-medium-bg: color-mix(in srgb, var(--brand-amber-500) 18%, var(--brand-navy-900));
+  --severity-low: var(--brand-blue-400);
+  --severity-low-text: var(--brand-blue-200);
+  --severity-low-bg: color-mix(in srgb, var(--brand-blue-500) 18%, var(--brand-navy-900));
+
+  --status-open: var(--brand-white);
+  --status-investigating: var(--brand-blue-200);
+  --status-inconclusive: var(--brand-amber-300);
+  --status-closed: var(--brand-green-400);
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-overlay: 0 12px 40px rgb(0 0 0 / 0.5);
+  --color-backdrop: rgb(0 0 0 / 0.6);
+}
