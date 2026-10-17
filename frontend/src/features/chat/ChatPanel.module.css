@@ -1,0 +1,193 @@
+/* Painel lateral não modal: dá para conversar e operar a fila ao mesmo tempo. */
+.panel {
+  position: fixed;
+  top: var(--header-height);
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: min(400px, 100vw);
+  border-left: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform var(--duration-normal) var(--easing-standard),
+    visibility 0s linear var(--duration-normal);
+}
+
+.panel[data-open] {
+  transform: translateX(0);
+  visibility: visible;
+  transition:
+    transform var(--duration-normal) var(--easing-standard),
+    visibility 0s;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
+
+.subtitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.statusDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+}
+
+.subtitle[data-status="open"] .statusDot {
+  background: var(--color-success);
+}
+
+.subtitle[data-status="reconnecting"] .statusDot {
+  background: var(--severity-medium);
+  animation: blink 1s infinite;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4);
+  overscroll-behavior: contain;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day {
+  justify-self: center;
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.loadOlder {
+  display: flex;
+  margin: 0 auto var(--space-3);
+}
+
+.state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.pending {
+  display: grid;
+  justify-self: end;
+  justify-items: end;
+  gap: 2px;
+  max-width: 88%;
+}
+
+.pendingBubble {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-card) 4px var(--radius-card) var(--radius-card);
+  background: color-mix(in srgb, var(--color-primary) 55%, var(--color-surface));
+  color: var(--color-on-primary);
+  font-size: var(--font-size-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.pending[data-failed] .pendingBubble {
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  outline: 1px solid var(--color-danger);
+}
+
+.sending,
+.retry {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.retry {
+  border: 0;
+  background: none;
+  color: var(--color-danger);
+  font-weight: var(--font-weight-semibold);
+}
+
+.unseen {
+  position: absolute;
+  bottom: 96px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-overlay);
+  transform: translateX(-50%);
+}
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.composer textarea {
+  flex: 1;
+  max-height: 120px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+  resize: none;
+}
+
+.composer textarea:focus-visible {
+  border-color: var(--color-focus);
+  outline-offset: 0;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
