@@ -160,6 +160,92 @@ export interface paths {
         patch: operations["change_status_api_incidents__incident_id__status_patch"];
         trace?: never;
     };
+    "/api/incidents/{incident_id}/handover-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pedidos de passagem de um incidente (mais recentes primeiro) */
+        get: operations["list_requests_api_incidents__incident_id__handover_requests_get"];
+        put?: never;
+        /** Pede para assumir um incidente que está com outro analista */
+        post: operations["request_handover_api_incidents__incident_id__handover_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/handover-requests/{handover_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Responsável aceita o pedido */
+        post: operations["accept_api_handover_requests__handover_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/handover-requests/{handover_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Responsável recusa o pedido */
+        post: operations["decline_api_handover_requests__handover_id__decline_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/handover-requests/{handover_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Quem pediu cancela o pedido */
+        post: operations["cancel_api_handover_requests__handover_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/incidents/{incident_id}/delegate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Responsável passa o incidente diretamente para outro analista */
+        post: operations["delegate_api_incidents__incident_id__delegate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/analytics": {
         parameters: {
             query?: never;
@@ -177,10 +263,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chat/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Histórico do chat da central (mais recentes) */
+        get: operations["history_api_chat_messages_get"];
+        put?: never;
+        /** Envia mensagem para a central */
+        post: operations["post_message_api_chat_messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Analistas da central (para delegar incidentes) */
+        get: operations["list_analysts_api_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Eventos em tempo real (Server-Sent Events): chat e mudanças de incidentes */
+        get: operations["stream_api_stream_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnalystRead */
+        AnalystRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Display Name */
+            display_name: string;
+        };
         /** AnalystStats */
         AnalystStats: {
             analyst: components["schemas"]["AssigneeRead"];
@@ -248,6 +396,54 @@ export interface components {
             /** Resolution Sla Rate */
             resolution_sla_rate: number | null;
         };
+        /** ChatHistory */
+        ChatHistory: {
+            /**
+             * Items
+             * @description Em ordem cronológica.
+             */
+            items: components["schemas"]["ChatMessageRead"][];
+            /** Has More */
+            has_more: boolean;
+        };
+        /** ChatIncidentRef */
+        ChatIncidentRef: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Vehicle Id */
+            vehicle_id: string;
+            severity: components["schemas"]["Severity"];
+            status: components["schemas"]["Status"];
+        };
+        /** ChatMessageCreate */
+        ChatMessageCreate: {
+            /** Body */
+            body: string;
+            /** Incident Id */
+            incident_id?: string | null;
+        };
+        /** ChatMessageRead */
+        ChatMessageRead: {
+            /** Id */
+            id: number;
+            kind: components["schemas"]["MessageKind"];
+            notice: components["schemas"]["Notice"] | null;
+            /** Body */
+            body: string;
+            author: components["schemas"]["AssigneeRead"] | null;
+            incident: components["schemas"]["ChatIncidentRef"] | null;
+            handover: components["schemas"]["HandoverRead"] | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** DailyPoint */
         DailyPoint: {
             /**
@@ -260,16 +456,64 @@ export interface components {
             /** Closed */
             closed: number;
         };
+        /** DelegateRequest */
+        DelegateRequest: {
+            /**
+             * To User Id
+             * Format: uuid
+             */
+            to_user_id: string;
+            /** Version */
+            version: number;
+        };
         /**
          * EventType
          * @enum {string}
          */
-        EventType: "created" | "status_changed" | "details_updated";
+        EventType: "created" | "status_changed" | "details_updated" | "assignee_changed";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HandoverCreate */
+        HandoverCreate: {
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
+        /** HandoverRead */
+        HandoverRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Incident Id
+             * Format: uuid
+             */
+            incident_id: string;
+            status: components["schemas"]["HandoverStatus"];
+            /** Reason */
+            reason: string;
+            requester: components["schemas"]["AssigneeRead"];
+            owner: components["schemas"]["AssigneeRead"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Resolved At */
+            resolved_at: string | null;
+        };
+        /**
+         * HandoverStatus
+         * @enum {string}
+         */
+        HandoverStatus: "pending" | "accepted" | "declined" | "cancelled";
         /** IncidentCreate */
         IncidentCreate: {
             /** Title */
@@ -408,6 +652,17 @@ export interface components {
             /** Password */
             password: string;
         };
+        /**
+         * MessageKind
+         * @enum {string}
+         */
+        MessageKind: "user" | "system" | "handover";
+        /**
+         * Notice
+         * @description Tipo do aviso automático, para o cliente escolher ícone e destaque.
+         * @enum {string}
+         */
+        Notice: "new_high_severity" | "claimed" | "resumed" | "released" | "closed" | "marked_inconclusive" | "claim_conflict" | "handover_requested" | "handover_accepted" | "handover_declined" | "handover_cancelled" | "delegated";
         /** Overview */
         Overview: {
             /** Total */
@@ -886,6 +1141,200 @@ export interface operations {
             };
         };
     };
+    list_requests_api_incidents__incident_id__handover_requests_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandoverRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_handover_api_incidents__incident_id__handover_requests_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HandoverCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandoverRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_api_handover_requests__handover_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handover_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandoverRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decline_api_handover_requests__handover_id__decline_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handover_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandoverRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_handover_requests__handover_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                handover_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HandoverRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delegate_api_incidents__incident_id__delegate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DelegateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     report_api_analytics_get: {
         parameters: {
             query?: {
@@ -908,6 +1357,120 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AnalyticsReport"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    history_api_chat_messages_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                before_id?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatHistory"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_message_api_chat_messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatMessageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_analysts_api_users_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalystRead"][];
+                };
+            };
+        };
+    };
+    stream_api_stream_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Last-Event-ID"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
