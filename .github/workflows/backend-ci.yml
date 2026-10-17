@@ -3,10 +3,7 @@ name: Backend CI
 on:
   pull_request:
     paths: ["backend/**", ".github/workflows/backend-ci.yml"]
-  push:
-    branches: [main]
-    paths: ["backend/**", ".github/workflows/backend-ci.yml"]
-  workflow_call:
+  workflow_call: # na main, roda como etapa do workflow de deploy
 
 concurrency:
   group: backend-ci-${{ github.ref }}
