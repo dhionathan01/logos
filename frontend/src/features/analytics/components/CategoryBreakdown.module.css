@@ -1,0 +1,64 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table thead th {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tbody th {
+  font-weight: var(--font-weight-medium);
+}
+
+.category {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.barCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 110px;
+}
+
+/* Barra fina, ponta arredondada, cresce da base. */
+.bar {
+  height: 12px;
+  min-width: 2px;
+  max-width: calc(100% - 3ch);
+  border-radius: 0 4px 4px 0;
+  background: var(--chart-reported);
+  transition: width var(--duration-normal) var(--easing-standard);
+}
+
+@media (max-width: 640px) {
+  .table thead th:nth-child(3),
+  .table tbody td:nth-child(3),
+  .table thead th:nth-child(4),
+  .table tbody td:nth-child(4) {
+    display: none;
+  }
+}
