@@ -182,6 +182,17 @@ main ─► CIs ─► imagens api/web no GHCR (tag = SHA) ─► SSH na VPS ─
 
 Decisão e trade-offs em [ADR-0011](docs/adr/0011-ci-cd-e-deploy-na-vps.md).
 
+### Demonstração pública
+
+O login de demonstração é aberto de propósito, então a instância pública se protege de abuso:
+
+- **Cotas por IP no nginx:** leituras com 20 req/s, escritas (criar, alterar, excluir, mandar mensagem) com 30 por minuto, login com 10 por minuto e até 6 conexões de tempo real. Acima disso a resposta é 429.
+- **Tamanho e formato:** corpo de no máximo 64 KB (4 KB no login), validação estrita de cada campo (campos desconhecidos são recusados), SQL sempre parametrizado e texto sempre escapado na tela (sem HTML injetável).
+- **Isolamento de recursos:** cada container tem teto de memória e os logs têm teto de tamanho, então uma enxurrada não derruba a VPS nem enche o disco.
+- **Reset diário:** às 04:00 (horário de Brasília) os dados criados por visitantes são apagados e a base de demonstração é recriada (`python -m app.scripts.seed --reset`).
+
+Um ataque distribuído de grande volume (muitos IPs) está fora do alcance de uma VM gratuita; o próximo passo seria colocar um CDN com proteção contra DDoS na frente.
+
 ---
 
 ## API
