@@ -35,6 +35,8 @@ MVP da plataforma que organiza o caos entre **5.000 caminhões em rota** e a cen
 | **Validação e entradas inesperadas** | Schemas Pydantic estritos (`extra="forbid"`, limites de tamanho, enums, padrão de placa, data no futuro rejeitada), JSON malformado → `422`, corpo grande → `413`, todo erro em **Problem Details (RFC 9457)**, sem stack trace exposto. | `backend/app/schemas/incident.py` |
 | **Segurança básica da API** | JWT para analistas, API key para sistemas da frota (comparação em tempo constante), bcrypt, login sem enumeração de usuários, rate limit no login (429), CSP e headers de segurança no nginx, segredos só em variáveis de ambiente. | [ADR-0006](docs/adr/0006-autenticacao.md) |
 | **Visão de gestão (além da operação)** | **Painel analítico** com filtro de período: volume, taxa de resolução, tempos médios de resposta e resolução, **SLA por criticidade** (meta × realizado), incidentes **fora do SLA agora**, série diária registrados × resolvidos, recorte por categoria e **comparação entre analistas**, com mapa de calor de quem assume que tipo de incidente. Cada incidente também tem **histórico de auditoria** (quem fez o quê e quando). | [ADR-0013](docs/adr/0013-auditoria-sla-e-indicadores.md) |
+| **Coordenação entre analistas em tempo real** | **Chat da central** com avisos automáticos (quem assumiu, devolveu, fechou e **quem tentou assumir e perdeu a corrida**). Quem perdeu pode **pedir para assumir**: o pedido aparece para todos e só o responsável aceita ou recusa, com transferência atômica e auditada. O responsável também pode **delegar**. Tudo chega em menos de 1 s via **SSE + PostgreSQL LISTEN/NOTIFY**: o aviso só sai depois do commit, e a reconexão recupera o que se perdeu (`Last-Event-ID`). | [ADR-0014](docs/adr/0014-tempo-real-com-sse-e-listen-notify.md), [ADR-0015](docs/adr/0015-chat-e-passagem-de-incidentes.md) |
+| **Navegar por milhares de registros** | Paginação na URL (25/50/100 por página, com links compartilháveis) ou **"Exibir todos"** numa área com rolagem própria, mantendo filtros e contadores à vista. | `frontend/src/features/incidents/pagination.ts` |
 | **Feedback visual, modo claro/escuro, transições** | Skeleton, estados vazios distintos, tela de erro com "tentar novamente", toasts de confirmação, tema claro/escuro (preferência do sistema por padrão, sem piscar), transições curtas e respeito a `prefers-reduced-motion`. | `frontend/src/features/incidents/components/` |
 
 ### Ciclo de vida do incidente
@@ -157,8 +159,8 @@ cd frontend
 npm run typecheck && npx oxlint && npm test
 ```
 
-- **Backend:** 84 testes, `mypy --strict`. Inclui o teste de corrida entre dois analistas, payloads maliciosos, idempotência, queda do banco, trilha de auditoria (inclusive "conflito não deixa rastro") e os cálculos de SLA e indicadores com dados controlados.
-- **Frontend:** 55 testes com Vitest + Testing Library + MSW. Cobre os estados de loading/erro/vazio, a mutação otimista com sucesso, conflito e queda de rede, o painel analítico e a descrição do histórico.
+- **Backend:** 119 testes, `mypy --strict`. Inclui o teste de corrida entre dois analistas (e entre dois pedidos de passagem simultâneos), payloads maliciosos, idempotência, queda do banco, trilha de auditoria, cálculos de SLA e a prova, escutando o canal real do PostgreSQL, de que eventos só são publicados após o commit.
+- **Frontend:** 74 testes com Vitest + Testing Library + MSW. Cobre estados de loading/erro/vazio, a mutação otimista (sucesso, conflito, queda de rede), o painel analítico, o parser SSE, o cache do chat, as permissões do cartão de passagem e a paginação.
 - **Contrato:** o CI regenera os tipos TypeScript a partir do OpenAPI e falha se estiverem desatualizados.
 
 Estratégia completa em [ADR-0012](docs/adr/0012-estrategia-de-testes.md).
@@ -192,6 +194,12 @@ Documentação interativa em `/api/docs`. Resumo:
 | `GET` | `/api/incidents/summary` | Contadores por criticidade e status |
 | `GET` | `/api/incidents/{id}` | Detalhe |
 | `GET` | `/api/incidents/{id}/events` | Histórico de auditoria (criação, mudanças de status, edições) |
+| `GET` | `/api/stream` | Eventos em tempo real (SSE): mensagens do chat e mudanças de incidentes; aceita `Last-Event-ID` |
+| `GET`/`POST` | `/api/chat/messages` | Histórico (paginado por `before_id`) e envio de mensagem |
+| `GET`/`POST` | `/api/incidents/{id}/handover-requests` | Pedidos de passagem do incidente / pedir para assumir |
+| `POST` | `/api/handover-requests/{id}/accept`, `/decline`, `/cancel` | Responder ou cancelar um pedido |
+| `POST` | `/api/incidents/{id}/delegate` | Responsável passa o incidente a outro analista (exige `version`) |
+| `GET` | `/api/users` | Analistas da central |
 | `GET` | `/api/analytics` | Indicadores: resumo, por categoria, por criticidade (SLA), por analista e série diária; filtros `reported_from`/`reported_to` e `tz` |
 | `POST` | `/api/incidents` | Registra incidente (JWT ou `X-API-Key`; aceita `Idempotency-Key`) |
 | `PATCH` | `/api/incidents/{id}` | Edita dados (exige `version`) |
@@ -239,13 +247,13 @@ Sem biblioteca de componentes de UI nem de gráficos: os componentes usam os des
 
 Todas em [`docs/adr/`](docs/adr/README.md):
 
-0001 Registrar decisões em ADR · 0002 Monorepo · 0003 FastAPI + SQLAlchemy + PostgreSQL · 0004 Arquitetura em camadas · 0005 Ciclo de vida como máquina de estados · 0006 Autenticação · 0007 Concorrência otimista + atribuição · 0008 Resiliência e idempotência · 0009 Estado e resiliência no frontend · 0010 Design tokens e design da informação · 0011 CI/CD e deploy · 0012 Estratégia de testes · 0013 Auditoria, SLA e indicadores
+0001 Registrar decisões em ADR · 0002 Monorepo · 0003 FastAPI + SQLAlchemy + PostgreSQL · 0004 Arquitetura em camadas · 0005 Ciclo de vida como máquina de estados · 0006 Autenticação · 0007 Concorrência otimista + atribuição · 0008 Resiliência e idempotência · 0009 Estado e resiliência no frontend · 0010 Design tokens e design da informação · 0011 CI/CD e deploy · 0012 Estratégia de testes · 0013 Auditoria, SLA e indicadores · 0014 Tempo real com SSE e LISTEN/NOTIFY · 0015 Chat e passagem de incidentes
 
 ---
 
 ## Próximos passos
 
-- **Tempo real via SSE** (PostgreSQL `LISTEN/NOTIFY`), substituindo o polling de 5 s.
+- **Papel de supervisor** com aceite forçado de passagem e aceite automático após tempo sem resposta.
 - **Metas de SLA configuráveis** pela interface e alerta ativo (push/e-mail) quando um incidente entra em violação.
 - **Séries diárias materializadas** quando o volume passar de milhões de incidentes.
 - Token em cookie `HttpOnly` e usuário `deploy` restrito a um comando SSH forçado.
