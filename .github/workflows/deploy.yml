@@ -65,8 +65,8 @@ jobs:
     name: Deploy na VPS
     needs: images
     runs-on: ubuntu-latest
-    # Repositório privado (ADR-0016): as imagens no GHCR também são privadas, então a VPS
-    # precisa do token com leitura de pacotes. Secrets e APP_URL ficam no nível do repositório.
+    # ADR-0016: o pull na VPS é autenticado (funciona com a imagem pública ou privada).
+    # Secrets e APP_URL ficam no nível do repositório.
     permissions:
       contents: read
       packages: read

@@ -19,6 +19,6 @@ Cada decisão de arquitetura relevante é registrada aqui, no formato curto de A
 | [0013](0013-auditoria-sla-e-indicadores.md) | Auditoria de eventos, SLA por criticidade e indicadores | Aceito |
 | [0014](0014-tempo-real-com-sse-e-listen-notify.md) | Tempo real com SSE e PostgreSQL LISTEN/NOTIFY | Aceito |
 | [0015](0015-chat-e-passagem-de-incidentes.md) | Chat da central e passagem de incidentes | Aceito |
-| [0016](0016-repositorio-privado.md) | Repositório privado: pull autenticado e secrets do repositório | Aceito (ajusta a configuração do 0011) |
+| [0016](0016-pull-autenticado-e-secrets.md) | Pull autenticado do GHCR e secrets no nível do repositório | Aceito (ajusta a configuração do 0011) |
 
 Modelo: [`template.md`](template.md).
