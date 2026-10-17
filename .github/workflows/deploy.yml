@@ -65,9 +65,11 @@ jobs:
     name: Deploy na VPS
     needs: images
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ vars.APP_URL }}
+    # Repositório privado (ADR-0016): as imagens no GHCR também são privadas, então a VPS
+    # precisa do token com leitura de pacotes. Secrets e APP_URL ficam no nível do repositório.
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v4
 
