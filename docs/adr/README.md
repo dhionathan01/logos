@@ -14,10 +14,11 @@ Cada decisão de arquitetura relevante é registrada aqui, no formato curto de A
 | [0008](0008-resiliencia-e-idempotencia.md) | Resiliência a falhas de rede e banco no backend | Aceito |
 | [0009](0009-estado-e-resiliencia-no-frontend.md) | Estado e resiliência no frontend com TanStack Query | Aceito (polling como mecanismo principal substituído pelo 0014) |
 | [0010](0010-design-tokens-e-design-da-informacao.md) | Design tokens da AutoU e design da informação | Aceito |
-| [0011](0011-ci-cd-e-deploy-na-vps.md) | CI/CD com GitHub Actions e deploy em Docker na VPS | Aceito |
+| [0011](0011-ci-cd-e-deploy-na-vps.md) | CI/CD com GitHub Actions e deploy em Docker na VPS | Aceito (configuração de secrets ajustada pelo 0016) |
 | [0012](0012-estrategia-de-testes.md) | Estratégia de testes | Aceito |
 | [0013](0013-auditoria-sla-e-indicadores.md) | Auditoria de eventos, SLA por criticidade e indicadores | Aceito |
 | [0014](0014-tempo-real-com-sse-e-listen-notify.md) | Tempo real com SSE e PostgreSQL LISTEN/NOTIFY | Aceito |
 | [0015](0015-chat-e-passagem-de-incidentes.md) | Chat da central e passagem de incidentes | Aceito |
+| [0016](0016-repositorio-privado.md) | Repositório privado: pull autenticado e secrets do repositório | Aceito (ajusta a configuração do 0011) |
 
 Modelo: [`template.md`](template.md).
