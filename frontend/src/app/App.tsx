@@ -12,6 +12,9 @@ import { AppShell } from "./AppShell";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { createQueryClient } from "./queryClient";
 
+/** Altura da barra do chat (--chat-bar-height) mais uma folga. */
+const CHAT_BAR_CLEARANCE_PX = 68;
+
 export function App() {
   const [queryClient] = useState(createQueryClient);
   const { theme } = useTheme();
@@ -37,8 +40,15 @@ export function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
-        {/* À esquerda: o lado direito é do painel do chat, que não pode ficar coberto. */}
-        <Toaster position="bottom-left" theme={theme} richColors closeButton />
+        {/* À esquerda e acima da barra do chat, que fica fixa no rodapé e não pode ser coberta. */}
+        <Toaster
+          position="bottom-left"
+          offset={{ bottom: CHAT_BAR_CLEARANCE_PX }}
+          mobileOffset={{ bottom: CHAT_BAR_CLEARANCE_PX }}
+          theme={theme}
+          richColors
+          closeButton
+        />
       </QueryClientProvider>
     </ErrorBoundary>
   );

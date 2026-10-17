@@ -1,70 +1,54 @@
-/* Painel lateral não modal: dá para conversar e operar a fila ao mesmo tempo. */
-.panel {
+/* Janela acoplada ao rodapé: a barra fica sempre à vista e o chat abre por cima dela. */
+.dock {
   position: fixed;
-  top: var(--header-height);
-  right: 0;
+  right: var(--space-6);
   bottom: 0;
   z-index: 20;
   display: flex;
-  flex-direction: column;
-  width: min(var(--chat-panel-width), 100vw);
-  border-left: 1px solid var(--color-border);
+  flex-direction: column-reverse;
+  width: min(var(--chat-panel-width), calc(100vw - 2 * var(--space-6)));
+  border: 1px solid var(--color-border);
+  border-bottom: 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   background: var(--color-surface);
   box-shadow: var(--shadow-overlay);
-  transform: translateX(100%);
+  overflow: hidden;
+}
+
+.body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 0;
   visibility: hidden;
   transition:
-    transform var(--duration-normal) var(--easing-standard),
+    height var(--duration-normal) var(--easing-standard),
     visibility 0s linear var(--duration-normal);
 }
 
-.panel[data-open] {
-  transform: translateX(0);
+.dock[data-open] .body {
+  height: min(560px, calc(100dvh - var(--header-height) - var(--chat-bar-height) - var(--space-6)));
   visibility: visible;
   transition:
-    transform var(--duration-normal) var(--easing-standard),
+    height var(--duration-normal) var(--easing-standard),
     visibility 0s;
 }
 
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-4) var(--space-3);
-  border-bottom: 1px solid var(--color-border);
-}
+/* Mobile: barra na largura toda; aberto, o chat ocupa a tela abaixo do header. */
+@media (max-width: 640px) {
+  .dock {
+    right: 0;
+    left: 0;
+    width: 100%;
+    border-radius: 0;
+    border-right: 0;
+    border-left: 0;
+  }
 
-.title {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
+  .dock[data-open] .body {
+    height: calc(100dvh - var(--header-height) - var(--chat-bar-height));
+  }
 }
-
-.subtitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-}
-
-.statusDot {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-border-strong);
-}
-
-.subtitle[data-status="open"] .statusDot {
-  background: var(--color-success);
-}
-
-.subtitle[data-status="reconnecting"] .statusDot {
-  background: var(--severity-medium);
-  animation: blink 1s infinite;
-}
-
 .messages {
   flex: 1;
   overflow-y: auto;
@@ -184,10 +168,4 @@
 .composer textarea:focus-visible {
   border-color: var(--color-focus);
   outline-offset: 0;
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0.3;
-  }
 }

@@ -63,6 +63,20 @@ describe("ChatPanel", () => {
     expect(screen.queryByRole("button", { name: /Passar para/ })).not.toBeInTheDocument();
   });
 
+  it("com o chat fechado, a barra do rodapé avisa o pedido pendente e abre ao clicar", async () => {
+    chatUiStore.close();
+    signInAs(ANA);
+    serveHistory([handoverCard]);
+
+    renderWithProviders(<ChatPanel />);
+
+    const bar = await screen.findByRole("button", { name: /1 pedido aguarda sua resposta/ });
+    expect(bar).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(bar);
+    expect(bar).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Recusar" })).toBeEnabled();
+  });
+
   it("mantém a mensagem com opção de reenviar quando a rede falha", async () => {
     signInAs(ANA);
     serveHistory([]);

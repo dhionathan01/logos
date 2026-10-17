@@ -1,0 +1,97 @@
+.bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: var(--chat-bar-height);
+  padding: 0 var(--space-4);
+  border: 0;
+  background: var(--color-header);
+  color: var(--color-on-header);
+  text-align: left;
+}
+
+.bar:hover {
+  background: color-mix(in srgb, var(--color-on-header) 8%, var(--color-header));
+}
+
+.bar:focus-visible {
+  outline-offset: -3px;
+}
+
+.icon {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Ponto de conexão: verde ao vivo, âmbar reconectando. */
+.live {
+  position: absolute;
+  right: -3px;
+  bottom: -2px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--color-header);
+  border-radius: 50%;
+  background: var(--color-border-strong);
+}
+
+.live[data-status="open"] {
+  background: var(--brand-green-400);
+}
+
+.live[data-status="reconnecting"] {
+  background: var(--brand-amber-500);
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.subtitle {
+  overflow: hidden;
+  font-size: var(--font-size-xs);
+  color: color-mix(in srgb, var(--color-on-header) 72%, transparent);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtitle[data-level="urgent"],
+.subtitle[data-level="unread"] {
+  color: var(--color-on-header);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* A bolinha: laranja da marca para mensagem nova, âmbar pulsando para pedido esperando você. */
+.dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--brand-orange-500);
+}
+
+.dot[data-level="urgent"] {
+  background: var(--brand-amber-500);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-amber-500) 60%, transparent);
+  animation: ping 1.6s infinite;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: color-mix(in srgb, var(--color-on-header) 72%, transparent);
+}
+
+@keyframes ping {
+  70% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}

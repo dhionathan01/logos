@@ -1,4 +1,4 @@
-import { ArrowDown, RotateCw, Send, X } from "lucide-react";
+import { ArrowDown, RotateCw, Send } from "lucide-react";
 import {
   type FormEvent,
   type KeyboardEvent,
@@ -11,17 +11,18 @@ import {
 
 import { MAX_MESSAGE_LENGTH } from "./limits";
 import type { ChatMessage } from "../../api/types";
-import { useRealtimeStatus } from "../../realtime/realtimeStore";
 import { Button } from "../../shared/components/Button";
 import { Spinner } from "../../shared/components/Spinner";
 import { useSession } from "../auth/useSession";
 import { useChatHistory, useHandoverAction, useLoadOlderMessages, useSendMessage } from "./api";
+import { ChatBar } from "./ChatBar";
 import styles from "./ChatPanel.module.css";
-import { chatUiStore, useChatUi } from "./chatUiStore";
+import { useChatUi } from "./chatUiStore";
 import { MessageItem } from "./MessageItem";
 
 /** Distância do fim da lista em que ainda consideramos que o usuário "está acompanhando". */
 const FOLLOW_THRESHOLD_PX = 80;
+const BODY_ID = "chat-central";
 
 interface PendingMessage {
   tempId: number;
@@ -43,7 +44,6 @@ function dayLabel(iso: string): string {
 export function ChatPanel() {
   const { isOpen } = useChatUi();
   const { user } = useSession();
-  const status = useRealtimeStatus();
   const history = useChatHistory();
   const loadOlder = useLoadOlderMessages();
   const sendMessage = useSendMessage();
@@ -136,134 +136,112 @@ export function ChatPanel() {
   };
 
   return (
-    <aside
-      className={styles.panel}
-      data-open={isOpen || undefined}
-      aria-label="Chat da central"
-      aria-hidden={!isOpen}
-      inert={!isOpen}
-    >
-      <header className={styles.header}>
-        <div>
-          <h2 className={styles.title}>Central</h2>
-          <p className={styles.subtitle} data-status={status}>
-            <span className={styles.statusDot} aria-hidden="true" />
-            {status === "open"
-              ? "Ao vivo · todos os analistas veem esta conversa"
-              : status === "reconnecting"
-                ? "Reconectando… as mensagens perdidas chegam ao voltar"
-                : "Conectando…"}
-          </p>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-label="Fechar chat"
-          icon={<X size={18} />}
-          onClick={chatUiStore.close}
-        />
-      </header>
+    <aside className={styles.dock} data-open={isOpen || undefined} aria-label="Chat da central">
+      <ChatBar controls={BODY_ID} />
 
-      <div className={styles.messages} ref={listRef} onScroll={handleScroll}>
-        {history.isPending ? (
-          <p className={styles.state}>
-            <Spinner size={14} /> Carregando conversa…
-          </p>
-        ) : history.isError ? (
-          <div className={styles.state}>
-            <p>Não foi possível carregar a conversa.</p>
-            <Button size="sm" variant="secondary" onClick={() => void history.refetch()}>
-              Tentar novamente
-            </Button>
-          </div>
-        ) : (
-          <>
-            {history.data?.has_more && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className={styles.loadOlder}
-                isLoading={loadOlder.isPending}
-                onClick={handleLoadOlder}
-              >
-                Carregar mensagens anteriores
+      {/* Não modal: dá para conversar e operar a fila ao mesmo tempo. */}
+      <div id={BODY_ID} className={styles.body} aria-hidden={!isOpen} inert={!isOpen}>
+        <div className={styles.messages} ref={listRef} onScroll={handleScroll}>
+          {history.isPending ? (
+            <p className={styles.state}>
+              <Spinner size={14} /> Carregando conversa…
+            </p>
+          ) : history.isError ? (
+            <div className={styles.state}>
+              <p>Não foi possível carregar a conversa.</p>
+              <Button size="sm" variant="secondary" onClick={() => void history.refetch()}>
+                Tentar novamente
               </Button>
-            )}
-            {messages.length === 0 && (
-              <p className={styles.state}>
-                Nenhuma mensagem ainda. Avisos de quem assume, conflitos e pedidos de passagem
-                aparecem aqui automaticamente.
-              </p>
-            )}
-            <ol className={styles.list}>
-              {messages.map((message, index) => (
-                <MessageWithDay
-                  key={message.id}
-                  message={message}
-                  previous={messages[index - 1]}
-                  currentUserId={user?.id}
-                  isActing={
-                    handoverAction.isPending &&
-                    handoverAction.variables?.handoverId === message.handover?.id
-                  }
-                  onHandoverAction={(handoverId, action) =>
-                    handoverAction.mutate({ handoverId, action })
-                  }
-                />
-              ))}
-              {pending.map((item) => (
-                <li
-                  key={item.tempId}
-                  className={styles.pending}
-                  data-failed={item.failed || undefined}
+            </div>
+          ) : (
+            <>
+              {history.data?.has_more && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className={styles.loadOlder}
+                  isLoading={loadOlder.isPending}
+                  onClick={handleLoadOlder}
                 >
-                  <p className={styles.pendingBubble}>{item.body}</p>
-                  {item.failed ? (
-                    <button
-                      type="button"
-                      className={styles.retry}
-                      onClick={() => send(item.body, item.tempId)}
-                    >
-                      <RotateCw size={12} aria-hidden="true" /> Não enviada. Tentar de novo
-                    </button>
-                  ) : (
-                    <span className={styles.sending}>
-                      <Spinner size={10} /> Enviando…
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </>
+                  Carregar mensagens anteriores
+                </Button>
+              )}
+              {messages.length === 0 && (
+                <p className={styles.state}>
+                  Nenhuma mensagem ainda. Avisos de quem assume, conflitos e pedidos de passagem
+                  aparecem aqui automaticamente.
+                </p>
+              )}
+              <ol className={styles.list}>
+                {messages.map((message, index) => (
+                  <MessageWithDay
+                    key={message.id}
+                    message={message}
+                    previous={messages[index - 1]}
+                    currentUserId={user?.id}
+                    isActing={
+                      handoverAction.isPending &&
+                      handoverAction.variables?.handoverId === message.handover?.id
+                    }
+                    onHandoverAction={(handoverId, action) =>
+                      handoverAction.mutate({ handoverId, action })
+                    }
+                  />
+                ))}
+                {pending.map((item) => (
+                  <li
+                    key={item.tempId}
+                    className={styles.pending}
+                    data-failed={item.failed || undefined}
+                  >
+                    <p className={styles.pendingBubble}>{item.body}</p>
+                    {item.failed ? (
+                      <button
+                        type="button"
+                        className={styles.retry}
+                        onClick={() => send(item.body, item.tempId)}
+                      >
+                        <RotateCw size={12} aria-hidden="true" /> Não enviada. Tentar de novo
+                      </button>
+                    ) : (
+                      <span className={styles.sending}>
+                        <Spinner size={10} /> Enviando…
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+        </div>
+
+        {hasUnseen && (
+          <button type="button" className={styles.unseen} onClick={() => scrollToEnd()}>
+            <ArrowDown size={14} aria-hidden="true" /> Novas mensagens
+          </button>
         )}
+
+        <form className={styles.composer} onSubmit={handleSubmit}>
+          <label className="visually-hidden" htmlFor="chat-message">
+            Mensagem para a central
+          </label>
+          <textarea
+            id="chat-message"
+            rows={2}
+            maxLength={MAX_MESSAGE_LENGTH}
+            placeholder="Mensagem para a central (Enter envia, Shift+Enter quebra linha)"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <Button
+            type="submit"
+            aria-label="Enviar"
+            icon={<Send size={16} />}
+            disabled={!draft.trim()}
+          />
+        </form>
       </div>
-
-      {hasUnseen && (
-        <button type="button" className={styles.unseen} onClick={() => scrollToEnd()}>
-          <ArrowDown size={14} aria-hidden="true" /> Novas mensagens
-        </button>
-      )}
-
-      <form className={styles.composer} onSubmit={handleSubmit}>
-        <label className="visually-hidden" htmlFor="chat-message">
-          Mensagem para a central
-        </label>
-        <textarea
-          id="chat-message"
-          rows={2}
-          maxLength={MAX_MESSAGE_LENGTH}
-          placeholder="Mensagem para a central (Enter envia, Shift+Enter quebra linha)"
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <Button
-          type="submit"
-          aria-label="Enviar"
-          icon={<Send size={16} />}
-          disabled={!draft.trim()}
-        />
-      </form>
     </aside>
   );
 }
