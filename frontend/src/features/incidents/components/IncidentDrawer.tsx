@@ -100,6 +100,8 @@ function IncidentDetails({ incident, onDeleted }: { incident: Incident; onDelete
         <Fact label="Responsável">
           {incident.assignee ? (isMine ? "Você" : incident.assignee.display_name) : "Ninguém"}
         </Fact>
+        <Fact label="Registrado em">{formatDateTime(incident.created_at)}</Fact>
+        <Fact label="Última atualização">{formatDateTime(incident.updated_at)}</Fact>
       </dl>
 
       {incident.description && (
