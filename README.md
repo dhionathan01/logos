@@ -37,6 +37,7 @@ MVP da plataforma que organiza o caos entre **5.000 caminhões em rota** e a cen
 | **Visão de gestão (além da operação)** | **Painel analítico** com filtro de período: volume, taxa de resolução, tempos médios de resposta e resolução, **SLA por criticidade** (meta × realizado), incidentes **fora do SLA agora**, série diária registrados × resolvidos, recorte por categoria e **comparação entre analistas**, com mapa de calor de quem assume que tipo de incidente. Cada incidente também tem **histórico de auditoria** (quem fez o quê e quando). | [ADR-0013](docs/adr/0013-auditoria-sla-e-indicadores.md) |
 | **Coordenação entre analistas em tempo real** | **Chat da central** com avisos automáticos (quem assumiu, devolveu, fechou e **quem tentou assumir e perdeu a corrida**). Quem perdeu pode **pedir para assumir**: o pedido aparece para todos e só o responsável aceita ou recusa, com transferência atômica e auditada. O responsável também pode **delegar**. Tudo chega em menos de 1 s via **SSE + PostgreSQL LISTEN/NOTIFY**: o aviso só sai depois do commit, e a reconexão recupera o que se perdeu (`Last-Event-ID`). | [ADR-0014](docs/adr/0014-tempo-real-com-sse-e-listen-notify.md), [ADR-0015](docs/adr/0015-chat-e-passagem-de-incidentes.md) |
 | **Navegar por milhares de registros** | Paginação na URL (25/50/100 por página, com links compartilháveis) ou **"Exibir todos"** numa área com rolagem própria, mantendo filtros e contadores à vista. | `frontend/src/features/incidents/pagination.ts` |
+| **Saber o que está comigo e o que já concluí** | Aba **Meu ambiente**: cada analista vê os incidentes que assumiu (em andamento) e os que concluiu (mais recentes primeiro), com tempo médio de resolução e taxa de SLA pessoais. Na fila, o filtro **Responsável** mostra os de qualquer analista. | `frontend/src/features/workspace/` |
 | **Feedback visual, modo claro/escuro, transições** | Skeleton, estados vazios distintos, tela de erro com "tentar novamente", toasts de confirmação, tema claro/escuro (preferência do sistema por padrão, sem piscar), transições curtas e respeito a `prefers-reduced-motion`. | `frontend/src/features/incidents/components/` |
 
 ### Ciclo de vida do incidente
@@ -160,7 +161,7 @@ npm run typecheck && npx oxlint && npm test
 ```
 
 - **Backend:** 119 testes, `mypy --strict`. Inclui o teste de corrida entre dois analistas (e entre dois pedidos de passagem simultâneos), payloads maliciosos, idempotência, queda do banco, trilha de auditoria, cálculos de SLA e a prova, escutando o canal real do PostgreSQL, de que eventos só são publicados após o commit.
-- **Frontend:** 74 testes com Vitest + Testing Library + MSW. Cobre estados de loading/erro/vazio, a mutação otimista (sucesso, conflito, queda de rede), o painel analítico, o parser SSE, o cache do chat, as permissões do cartão de passagem e a paginação.
+- **Frontend:** 80 testes com Vitest + Testing Library + MSW. Cobre estados de loading/erro/vazio, a mutação otimista (sucesso, conflito, queda de rede), o painel analítico, o parser SSE, o cache do chat, as permissões do cartão de passagem, a paginação, os dropdowns de filtro e o Meu ambiente.
 - **Contrato:** o CI regenera os tipos TypeScript a partir do OpenAPI e falha se estiverem desatualizados.
 
 Estratégia completa em [ADR-0012](docs/adr/0012-estrategia-de-testes.md).
