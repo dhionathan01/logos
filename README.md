@@ -12,7 +12,9 @@ MVP da plataforma que organiza o caos entre **5.000 caminhões em rota** e a cen
 | --- | --- | --- |
 | 🚀 | [**Aplicação online**](https://logos.152-67-53-190.sslip.io) | A central funcionando, com dados de demonstração |
 | 📘 | [**Documentação da API**](https://logos.152-67-53-190.sslip.io/api/docs) | Swagger gerado pelo FastAPI, com todos os endpoints e contratos |
-| 🎬 | [**Vídeo de apresentação**](https://www.loom.com/share/cd74e81ac8aa4629b2b0ea3944493183) | Decisões de arquitetura, funcionalidades e esteira de CI/CD |
+| 🎬 | [**Vídeo de apresentação**](https://www.loom.com/share/cd74e81ac8aa4629b2b0ea3944493183) | A aplicação em uso e o controle de concorrência entre dois analistas ao vivo |
+
+As decisões de arquitetura, a segurança da API e a esteira de CI/CD estão descritas neste README e nos [ADRs](docs/adr/).
 
 Para entrar, use os botões de acesso rápido na tela de login (Ana, Bruno ou Carla; senha `logos2026`). Para testar o tempo real, abra uma janela anônima com outro analista.
 
