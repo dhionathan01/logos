@@ -2,7 +2,17 @@
 
 MVP da plataforma que organiza o caos entre **5.000 caminhões em rota** e a central de decisão de uma operação logística: todos os incidentes em uma única fila, **já ordenada pelo que exige ação primeiro**, com garantia de que dois analistas nunca atuam no mesmo problema ao mesmo tempo.
 
-**Aplicação online:** https://logos.152-67-53-190.sslip.io · **Documentação da API:** https://logos.152-67-53-190.sslip.io/api/docs · **Vídeo de apresentação:** https://www.loom.com/share/cd74e81ac8aa4629b2b0ea3944493183
+<p align="center">
+  <a href="https://logos.152-67-53-190.sslip.io"><img src="https://img.shields.io/badge/Aplica%C3%A7%C3%A3o-online-2ea44f?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Aplicação online"></a>
+  <a href="https://logos.152-67-53-190.sslip.io/api/docs"><img src="https://img.shields.io/badge/API-Swagger-85ea2d?style=for-the-badge&logo=swagger&logoColor=black" alt="Documentação da API"></a>
+  <a href="https://www.loom.com/share/cd74e81ac8aa4629b2b0ea3944493183"><img src="https://img.shields.io/badge/V%C3%ADdeo-apresenta%C3%A7%C3%A3o-625df5?style=for-the-badge&logo=loom&logoColor=white" alt="Vídeo de apresentação"></a>
+</p>
+
+| | Onde | O que tem |
+| --- | --- | --- |
+| 🚀 | [**Aplicação online**](https://logos.152-67-53-190.sslip.io) | A central funcionando, com dados de demonstração |
+| 📘 | [**Documentação da API**](https://logos.152-67-53-190.sslip.io/api/docs) | Swagger gerado pelo FastAPI, com todos os endpoints e contratos |
+| 🎬 | [**Vídeo de apresentação**](https://www.loom.com/share/cd74e81ac8aa4629b2b0ea3944493183) | Decisões de arquitetura, funcionalidades e esteira de CI/CD |
 
 Para entrar, use os botões de acesso rápido na tela de login (Ana, Bruno ou Carla; senha `logos2026`). Para testar o tempo real, abra uma janela anônima com outro analista.
 
