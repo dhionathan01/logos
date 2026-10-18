@@ -162,8 +162,8 @@ cd frontend
 npm run typecheck && npx oxlint && npm test
 ```
 
-- **Backend:** 119 testes, `mypy --strict`. Inclui o teste de corrida entre dois analistas (e entre dois pedidos de passagem simultâneos), payloads maliciosos, idempotência, queda do banco, trilha de auditoria, cálculos de SLA e a prova, escutando o canal real do PostgreSQL, de que eventos só são publicados após o commit.
-- **Frontend:** 80 testes com Vitest + Testing Library + MSW. Cobre estados de loading/erro/vazio, a mutação otimista (sucesso, conflito, queda de rede), o painel analítico, o parser SSE, o cache do chat, as permissões do cartão de passagem, a paginação, os dropdowns de filtro e o Meu ambiente.
+- **Backend:** 122 testes, `mypy --strict`. Inclui o teste de corrida entre dois analistas (e entre dois pedidos de passagem simultâneos), payloads maliciosos, idempotência, queda do banco, trilha de auditoria, cálculos de SLA e a prova, escutando o canal real do PostgreSQL, de que eventos só são publicados após o commit.
+- **Frontend:** 82 testes com Vitest + Testing Library + MSW. Cobre estados de loading/erro/vazio, a mutação otimista (sucesso, conflito, queda de rede), o painel analítico, o parser SSE, o cache do chat, as permissões do cartão de passagem, a paginação, os dropdowns de filtro e o Meu ambiente.
 - **Contrato:** o CI regenera os tipos TypeScript a partir do OpenAPI e falha se estiverem desatualizados.
 
 Estratégia completa em [ADR-0012](docs/adr/0012-estrategia-de-testes.md).
