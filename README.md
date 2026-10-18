@@ -2,7 +2,7 @@
 
 MVP da plataforma que organiza o caos entre **5.000 caminhões em rota** e a central de decisão de uma operação logística: todos os incidentes em uma única fila, **já ordenada pelo que exige ação primeiro**, com garantia de que dois analistas nunca atuam no mesmo problema ao mesmo tempo.
 
-**Aplicação online:** https://logos.152-67-53-190.sslip.io · **Documentação da API:** https://logos.152-67-53-190.sslip.io/api/docs
+**Aplicação online:** https://logos.152-67-53-190.sslip.io · **Documentação da API:** https://logos.152-67-53-190.sslip.io/api/docs · **Vídeo de apresentação:** https://www.loom.com/share/cd74e81ac8aa4629b2b0ea3944493183
 
 Para entrar, use os botões de acesso rápido na tela de login (Ana, Bruno ou Carla; senha `logos2026`). Para testar o tempo real, abra uma janela anônima com outro analista.
 
